@@ -20,6 +20,7 @@ import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.Radians;
@@ -44,6 +45,7 @@ import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.Time;
@@ -73,6 +75,8 @@ public final class Constants {
   public static final Time LOOP_PERIOD = Milliseconds.of(20.0);
 
   public static final Mass ROBOT_MASS = Pounds.of(100); // TODO: Put real value
+
+  public static final LinearAcceleration G = MetersPerSecondPerSecond.of(9.807);
 
   public static class Ports {
     public static final int ELEVATOR_MOTOR_LEFT = 10;
