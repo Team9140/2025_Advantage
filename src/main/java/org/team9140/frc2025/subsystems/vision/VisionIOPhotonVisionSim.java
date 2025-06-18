@@ -13,7 +13,7 @@
 
 package org.team9140.frc2025.subsystems.vision;
 
-import static org.team9140.frc2025.subsystems.vision.VisionConstants.aprilTagLayout;
+import static org.team9140.frc2025.Constants.Vision.aprilTagLayout;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform3d;

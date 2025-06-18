@@ -13,8 +13,6 @@
 
 package org.team9140.frc2025;
 
-import static org.team9140.frc2025.subsystems.vision.VisionConstants.*;
-
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
@@ -90,8 +88,9 @@ public class RobotContainer {
         vision =
             new Vision(
                 drive::addVisionMeasurement,
-                new VisionIOLimelight(camera0Name, drive::getRotation),
-                new VisionIOLimelight(camera1Name, drive::getRotation));
+                new VisionIOLimelight(Constants.Vision.limeA, drive::getRotation),
+                new VisionIOLimelight(Constants.Vision.limeB, drive::getRotation),
+                new VisionIOLimelight(Constants.Vision.limeC, drive::getRotation));
         break;
 
       case SIM:
@@ -99,14 +98,23 @@ public class RobotContainer {
         vision =
             new Vision(
                 drive::addVisionMeasurement,
-                new VisionIOPhotonVisionSim(camera0Name, robotToCamera0, drive::getPose),
-                new VisionIOPhotonVisionSim(camera1Name, robotToCamera1, drive::getPose));
+                new VisionIOPhotonVisionSim(
+                    Constants.Vision.limeA, Constants.Vision.robotToLimeA, drive::getPose),
+                new VisionIOPhotonVisionSim(
+                    Constants.Vision.limeB, Constants.Vision.robotToLimeB, drive::getPose),
+                new VisionIOPhotonVisionSim(
+                    Constants.Vision.limeC, Constants.Vision.robotToLimeC, drive::getPose));
         break;
 
       default:
         // Replayed robot, disable IO implementations
         // (Use same number of dummy implementations as the real robot)
-        vision = new Vision(drive::addVisionMeasurement, new VisionIO() {}, new VisionIO() {});
+        vision =
+            new Vision(
+                drive::addVisionMeasurement,
+                new VisionIO() {},
+                new VisionIO() {},
+                new VisionIO() {});
         break;
     }
 

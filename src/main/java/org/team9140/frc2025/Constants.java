@@ -29,9 +29,13 @@ import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.DistanceUnit;
 import edu.wpi.first.units.Measure;
@@ -90,8 +94,8 @@ public final class Constants {
     public static final AngularVelocity MIN_ROTATIONAL_SPEED = DegreesPerSecond.of(3);
     public static final AngularVelocity MIN_ROTATIONAL_SPEED_TELEOP = DegreesPerSecond.of(3);
 
-    public static final AngularVelocity MAX_MODULE_ROTATIONAL_SPEED =
-        RotationsPerSecond.of(3.0); // TODO: Put real value
+    // TODO: Put real value
+    public static final AngularVelocity MAX_MODULE_ROTATIONAL_SPEED = RotationsPerSecond.of(3.0);
 
     public static final double X_CONTROLLER_P =
         2.5 * 3.141592653589793238462643383279502884197169399375;
@@ -246,5 +250,47 @@ public final class Constants {
         new Translation2d(L4setback, reefBranchGap.times(-0.5));
     public static final Translation2d rightBranchOffset_L4 =
         new Translation2d(L4setback, reefBranchGap.times(0.5));
+  }
+
+  public class Vision {
+    // AprilTag layout
+    public static final AprilTagFieldLayout aprilTagLayout =
+        AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+
+    // Camera names, must match names configured on coprocessor
+    public static final String limeA = "limelight-a";
+    public static final String limeB = "limelight-b";
+    public static final String limeC = "limelight-c";
+
+    // Robot to camera transforms for sim
+    // (Not used by Limelight, configure in web UI instead)
+    // TODO: Actual values
+    public static final Transform3d robotToLimeA =
+        new Transform3d(0.2, 0.0, 0.2, new Rotation3d(0.0, -0.4, 0.0));
+    public static final Transform3d robotToLimeB =
+        new Transform3d(-0.2, 0.0, 0.2, new Rotation3d(0.0, -0.4, Math.PI));
+    public static final Transform3d robotToLimeC = new Transform3d();
+
+    // Basic filtering thresholds
+    public static final double maxAmbiguity = 0.3;
+    public static final double maxZError = 0.75;
+
+    // Standard deviation baselines, for 1 meter distance and 1 tag
+    // (Adjusted automatically based on distance and # of tags)
+    public static final double linearStdDevBaseline = 0.02; // Meters
+    public static final double angularStdDevBaseline = 0.06; // Radians
+
+    // Standard deviation multipliers for each camera
+    // (Adjust to trust some cameras more than others)
+    public static final double[] cameraStdDevFactors =
+        new double[] {
+          1.0, // Camera 0
+          1.0 // Camera 1
+        };
+
+    // Multipliers to apply for MegaTag 2 observations
+    public static double linearStdDevMegatag2Factor = 0.5; // More stable than full 3D solve
+    public static double angularStdDevMegatag2Factor =
+        Double.POSITIVE_INFINITY; // No rotation data available
   }
 }

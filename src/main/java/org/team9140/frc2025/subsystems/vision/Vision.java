@@ -13,7 +13,7 @@
 
 package org.team9140.frc2025.subsystems.vision;
 
-import static org.team9140.frc2025.subsystems.vision.VisionConstants.*;
+import static org.team9140.frc2025.Constants.Vision.*;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
