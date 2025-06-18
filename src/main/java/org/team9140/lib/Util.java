@@ -67,13 +67,15 @@ public class Util {
     } else return Math.max(val, -limit);
   }
 
-  // Not being used rn... if you use it make sure to add the update snipped, but this optimization may no longer be necessary
+  // Not being used rn... if you use it make sure to add the update snipped, but this optimization
+  // may no longer be necessary
   @Deprecated
   public static void updateAlliance() {
     alliance = DriverStation.getAlliance().orElse(null);
   }
 
-  // Not being used rn... if you use it make sure to add the update snipped, but this optimization may no longer be necessary
+  // Not being used rn... if you use it make sure to add the update snipped, but this optimization
+  // may no longer be necessary
   @Deprecated
   public static Optional<DriverStation.Alliance> getAlliance() {
     if (alliance == null) updateAlliance();
