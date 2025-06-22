@@ -7,7 +7,6 @@ import static edu.wpi.first.units.Units.Seconds;
 
 import java.util.function.Supplier;
 
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.team9140.frc2025.Constants;
 import org.team9140.lib.Util;
@@ -22,9 +21,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 public class Elevator {
     private final ElevatorIO io;
     private final ElevatorIOInputsAutoLogged inputs = new ElevatorIOInputsAutoLogged();
-
-    @AutoLogOutput
-    private boolean brakeModeEnabled = true;
 
     private final TrapezoidProfile profile = new TrapezoidProfile(
             new TrapezoidProfile.Constraints(Constants.Elevator.CRUISE_VELOCITY.in(RadiansPerSecond),

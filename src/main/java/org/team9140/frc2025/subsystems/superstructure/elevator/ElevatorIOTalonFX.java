@@ -178,6 +178,7 @@ public class ElevatorIOTalonFX implements ElevatorIO {
                         .withFeedForward(feedforward));
     }
 
+    // Probably not needed cuz we don't use tuneable numbers or anything
     @Override
     public void setPID(double kP, double kI, double kD) {
         config.Slot0.kP = kP;
