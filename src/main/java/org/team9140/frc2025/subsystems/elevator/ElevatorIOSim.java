@@ -1,4 +1,4 @@
-package org.team9140.frc2025.subsystems.superstructure.elevator;
+package org.team9140.frc2025.subsystems.elevator;
 
 import static edu.wpi.first.units.Units.Kilograms;
 import static edu.wpi.first.units.Units.Meters;
@@ -79,7 +79,8 @@ public class ElevatorIOSim implements ElevatorIO {
   private double inputTorqueCurrent = 0.0;
   private double appliedVolts = 0.0;
 
-  private final PIDController controller = new PIDController(0.0, 0.0, 0.0);
+  private final PIDController controller =
+      new PIDController(Constants.Elevator.kP, Constants.Elevator.kI, Constants.Elevator.kD);
   private boolean closedLoop = false;
   private double feedforward = 0.0;
 

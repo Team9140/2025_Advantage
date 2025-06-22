@@ -14,24 +14,35 @@
 package org.team9140.frc2025;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.team9140.frc2025.commands.DriveCommands;
 import org.team9140.frc2025.generated.TunerConstants;
+import org.team9140.frc2025.helpers.AutoAiming;
 import org.team9140.frc2025.subsystems.drive.Drive;
 import org.team9140.frc2025.subsystems.drive.GyroIO;
 import org.team9140.frc2025.subsystems.drive.GyroIOPigeon2;
 import org.team9140.frc2025.subsystems.drive.ModuleIO;
 import org.team9140.frc2025.subsystems.drive.ModuleIOSim;
 import org.team9140.frc2025.subsystems.drive.ModuleIOTalonFX;
+import org.team9140.frc2025.subsystems.elevator.Elevator;
+import org.team9140.frc2025.subsystems.elevator.ElevatorIO;
+import org.team9140.frc2025.subsystems.elevator.ElevatorIOSim;
+import org.team9140.frc2025.subsystems.elevator.ElevatorIOTalonFX;
+import org.team9140.frc2025.subsystems.manipulator.Manipulator;
 import org.team9140.frc2025.subsystems.vision.Vision;
 import org.team9140.frc2025.subsystems.vision.VisionIO;
 import org.team9140.frc2025.subsystems.vision.VisionIOLimelight;
 import org.team9140.frc2025.subsystems.vision.VisionIOPhotonVisionSim;
+import org.team9140.lib.rollers.RollerIO;
+import org.team9140.lib.rollers.RollerIOSim;
+import org.team9140.lib.rollers.RollerIOTalonSRX;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -40,11 +51,22 @@ import org.team9140.frc2025.subsystems.vision.VisionIOPhotonVisionSim;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
+  @SuppressWarnings("unused")
   private final Vision vision;
 
-  private final Drive drive;
   private final CommandXboxController controller = new CommandXboxController(0);
   private final LoggedDashboardChooser<Command> autoChooser;
+
+  private final Drive drive;
+  private final Elevator elevator;
+  private final Manipulator manipulator;
+
+  private final Trigger stickInput =
+      new Trigger(
+          () ->
+              Math.abs(this.controller.getLeftX()) > 0.35
+                  || Math.abs(this.controller.getLeftY()) > 0.35
+                  || Math.abs(this.controller.getRightX()) > 0.35);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -58,6 +80,17 @@ public class RobotContainer {
                 new ModuleIOTalonFX(TunerConstants.FrontRight),
                 new ModuleIOTalonFX(TunerConstants.BackLeft),
                 new ModuleIOTalonFX(TunerConstants.BackRight));
+
+        vision =
+            new Vision(
+                drive::addVisionMeasurement,
+                new VisionIOLimelight(Constants.Vision.limeA, drive::getRotation),
+                new VisionIOLimelight(Constants.Vision.limeB, drive::getRotation),
+                new VisionIOLimelight(Constants.Vision.limeC, drive::getRotation));
+
+        elevator = new Elevator(new ElevatorIOTalonFX());
+
+        manipulator = new Manipulator(new RollerIOTalonSRX(Constants.Ports.MANIPULATOR_MOTOR));
         break;
 
       case SIM:
@@ -69,6 +102,23 @@ public class RobotContainer {
                 new ModuleIOSim(TunerConstants.FrontRight),
                 new ModuleIOSim(TunerConstants.BackLeft),
                 new ModuleIOSim(TunerConstants.BackRight));
+
+        vision =
+            new Vision(
+                drive::addVisionMeasurement,
+                new VisionIOPhotonVisionSim(
+                    Constants.Vision.limeA, Constants.Vision.robotToLimeA, drive::getPose),
+                new VisionIOPhotonVisionSim(
+                    Constants.Vision.limeB, Constants.Vision.robotToLimeB, drive::getPose),
+                new VisionIOPhotonVisionSim(
+                    Constants.Vision.limeC, Constants.Vision.robotToLimeC, drive::getPose));
+
+        elevator = new Elevator(new ElevatorIOSim());
+
+        // moi is made up tbh, and the gear ratio is weird cuz it drives two different
+        // rods at different gear ratios. lowkey sim is unnecessary for this
+        manipulator =
+            new Manipulator(new RollerIOSim(DCMotor.getAndymarkRs775_125(1), 0.004, 1.96 / 0.48));
         break;
 
       default:
@@ -80,41 +130,17 @@ public class RobotContainer {
                 new ModuleIO() {},
                 new ModuleIO() {},
                 new ModuleIO() {});
-        break;
-    }
-    switch (Constants.currentMode) {
-      case REAL:
-        // Real robot, instantiate hardware IO implementations
-        vision =
-            new Vision(
-                drive::addVisionMeasurement,
-                new VisionIOLimelight(Constants.Vision.limeA, drive::getRotation),
-                new VisionIOLimelight(Constants.Vision.limeB, drive::getRotation),
-                new VisionIOLimelight(Constants.Vision.limeC, drive::getRotation));
-        break;
 
-      case SIM:
-        // Sim robot, instantiate physics sim IO implementations
-        vision =
-            new Vision(
-                drive::addVisionMeasurement,
-                new VisionIOPhotonVisionSim(
-                    Constants.Vision.limeA, Constants.Vision.robotToLimeA, drive::getPose),
-                new VisionIOPhotonVisionSim(
-                    Constants.Vision.limeB, Constants.Vision.robotToLimeB, drive::getPose),
-                new VisionIOPhotonVisionSim(
-                    Constants.Vision.limeC, Constants.Vision.robotToLimeC, drive::getPose));
-        break;
-
-      default:
-        // Replayed robot, disable IO implementations
-        // (Use same number of dummy implementations as the real robot)
         vision =
             new Vision(
                 drive::addVisionMeasurement,
                 new VisionIO() {},
                 new VisionIO() {},
                 new VisionIO() {});
+
+        elevator = new Elevator(new ElevatorIO() {});
+
+        manipulator = new Manipulator(new RollerIO() {});
         break;
     }
 
@@ -151,6 +177,150 @@ public class RobotContainer {
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
             drive, controller::getLeftX, controller::getLeftY, controller::getRightX));
+
+    controller
+        .rightTrigger()
+        .onTrue(this.manipulator.outtake().until(this.controller.rightTrigger().negate()));
+
+    controller
+        .rightBumper()
+        .and(elevator.isStowed)
+        .whileTrue(
+            this.manipulator
+                .intakeCoral() // .alongWith(this.funnel.intakeCoral())
+                .withName("intake coral"));
+    controller
+        .leftBumper()
+        .whileTrue(
+            this.manipulator
+                .unstickCoral() // .alongWith(this.funnel.reverse())
+                .withName("unstick coral"));
+
+    this.controller
+        .rightBumper()
+        .and(elevator.isStowed.negate())
+        .whileTrue(this.manipulator.intakeAlgae().withName("intake algae"));
+
+    this.controller
+        .y()
+        .and(this.controller.povRight())
+        .onTrue(
+            this.drive
+                .coralReefDrive(Constants.ElevatorSetbacks.L4, false)
+                .alongWith(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
+                // .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
+                // Seconds.of(0.5)))
+                .until(this.stickInput)
+                .withName("high coral R"));
+
+    this.controller
+        .y()
+        .and(this.controller.povLeft())
+        .onTrue(
+            this.drive
+                .coralReefDrive(Constants.ElevatorSetbacks.L4, true)
+                .alongWith(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
+                // .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
+                // Seconds.of(0.5)))
+                .until(this.stickInput)
+                .withName("high coral L"));
+
+    this.controller
+        .y()
+        .and(this.controller.povCenter())
+        .and(this.manipulator.hasAlgae)
+        .onTrue(this.elevator.moveToPosition(Constants.Elevator.NET_HEIGHT).withName("net height"));
+
+    this.controller
+        .b()
+        .and(this.controller.povRight())
+        .onTrue(
+            this.drive
+                .coralReefDrive(Constants.ElevatorSetbacks.L3, false)
+                .alongWith(this.elevator.moveToPosition(Constants.Elevator.L3_coral_height))
+                // .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
+                // Seconds.of(0.5)))
+                .until(this.stickInput)
+                .withName("highish (level 3) coral R"));
+
+    this.controller
+        .b()
+        .and(this.controller.povLeft())
+        .onTrue(
+            this.drive
+                .coralReefDrive(Constants.ElevatorSetbacks.L3, true)
+                .alongWith(this.elevator.moveToPosition(Constants.Elevator.L3_coral_height))
+                // .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
+                // Seconds.of(0.5)))
+                .until(this.stickInput)
+                .withName("highish (level 3) coral L"));
+
+    this.controller
+        .b()
+        .and(this.controller.povCenter())
+        .onTrue(
+            this.elevator
+                .moveToPosition(Constants.Elevator.L3_ALGAE_height)
+                .until(this.stickInput)
+                .withName("highish (level 3) algae center"));
+
+    this.elevator
+        .isAlgaeing
+        .and(this.controller.rightBumper())
+        .onTrue(
+            this.drive
+                .algaeReefDrive()
+                // .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
+                // Seconds.of(0.5)))
+                .alongWith(
+                    this.elevator.moveToPosition(
+                        () ->
+                            AutoAiming.getClosestFace(this.drive.getPose().getTranslation())
+                                .getAlgaeElevatorHeight()))
+                .until(this.stickInput)
+                .withName("autoaiming algae"));
+
+    this.controller
+        .a()
+        .and(this.controller.povRight())
+        .onTrue(
+            this.drive
+                .coralReefDrive(Constants.ElevatorSetbacks.L2, false)
+                .alongWith(this.elevator.moveToPosition(Constants.Elevator.L2_coral_height))
+                // .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
+                // Seconds.of(0.5)))
+                .until(this.stickInput)
+                .withName("mid coral R"));
+
+    this.controller
+        .a()
+        .and(this.controller.povLeft())
+        .onTrue(
+            this.drive
+                .coralReefDrive(Constants.ElevatorSetbacks.L2, true)
+                .alongWith(this.elevator.moveToPosition(Constants.Elevator.L2_coral_height))
+                // .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
+                // Seconds.of(0.5)))
+                .until(this.stickInput)
+                .withName("mid coral L"));
+
+    this.controller
+        .a()
+        .and(this.controller.povCenter())
+        .onTrue(
+            this.elevator
+                .moveToPosition(Constants.Elevator.L2_ALGAE_height)
+                .until(this.stickInput)
+                .withName("mid (level 2) algae center"));
+
+    this.controller.x().onTrue(this.elevator.setGoal(Constants.Elevator.STOW_height));
+
+    // this.controller.x()
+    // .whileTrue(this.climber.climb(this.controller.getHID()::getLeftTriggerAxis,
+    // this.controller.getHID()::getRightTriggerAxis));
+    // this.controller.back().onTrue(this.climber.prep());
+    // this.elevator.isUp.onTrue(this.drivetrain.engageSlowMode())
+    // .onFalse(this.drivetrain.disengageSlowMode());
   }
 
   /**

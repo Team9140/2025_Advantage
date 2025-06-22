@@ -1,4 +1,4 @@
-package org.team9140.frc2025.subsystems.superstructure.elevator;
+package org.team9140.frc2025.subsystems.elevator;
 
 import org.littletonrobotics.junction.AutoLog;
 

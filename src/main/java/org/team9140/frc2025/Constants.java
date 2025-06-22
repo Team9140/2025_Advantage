@@ -26,7 +26,6 @@ import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 
@@ -40,7 +39,6 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.units.DistanceUnit;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
@@ -52,10 +50,8 @@ import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.RobotBase;
 
 /**
- * This class defines the runtime mode used by AdvantageKit. The mode is always
- * "real" when running
- * on a roboRIO. Change the value of "simMode" to switch between "sim" (physics
- * sim) and "replay"
+ * This class defines the runtime mode used by AdvantageKit. The mode is always "real" when running
+ * on a roboRIO. Change the value of "simMode" to switch between "sim" (physics sim) and "replay"
  * (log replay from a file).
  */
 public final class Constants {
@@ -99,7 +95,8 @@ public final class Constants {
     public static final AngularVelocity MIN_ROTATIONAL_SPEED = DegreesPerSecond.of(3);
     public static final AngularVelocity MIN_ROTATIONAL_SPEED_TELEOP = DegreesPerSecond.of(3);
 
-    public static final double X_CONTROLLER_P = 2.5 * 3.141592653589793238462643383279502884197169399375;
+    public static final double X_CONTROLLER_P =
+        2.5 * 3.141592653589793238462643383279502884197169399375;
     public static final double X_CONTROLLER_I = 0.0;
     public static final double X_CONTROLLER_D = 0.05;
     public static final double Y_CONTROLLER_P = X_CONTROLLER_P;
@@ -160,10 +157,8 @@ public final class Constants {
     public static final Distance SPOOL_RADIUS = Inches.of(0.75);
     public static final Distance SPOOL_CIRCUMFERENCE = SPOOL_RADIUS.times(Math.PI * 2.0);
 
-    public static final AngularVelocity CRUISE_VELOCITY = RotationsPerSecond
-        .of(Meters.of(2.5).div(SPOOL_CIRCUMFERENCE).magnitude());
-    public static final AngularAcceleration ACCELERATION = RotationsPerSecondPerSecond
-        .of(Meters.of(10.0).div(SPOOL_CIRCUMFERENCE).magnitude());
+    public static final LinearVelocity CRUISE_VELOCITY = MetersPerSecond.of(2.5);
+    public static final LinearAcceleration ACCELERATION = MetersPerSecondPerSecond.of(10.0);
 
     public static Angle ElevatorAngle = Degrees.of(80);
 
@@ -192,8 +187,8 @@ public final class Constants {
 
     // Feed Forwards
     public static double kS = 0.88302;
-    public static double kV = 0.7863;
-    public static double kA = 0.44435;
+    public static double kV = 0.7863 * Constants.Elevator.SPOOL_CIRCUMFERENCE.in(Meters);
+    public static double kA = 0.44435 * Constants.Elevator.SPOOL_CIRCUMFERENCE.in(Meters);
     public static double kG = 9.6;
   }
 
@@ -231,14 +226,14 @@ public final class Constants {
   public static final class AutoAlign {
     public static final Distance REEF_RADIUS = Feet.of(5).plus(Inches.of(5.5)).div(2);
 
-    public static final Transform2d HORIZONTAL_BRANCH_DISTANCE_FROM_CENTER = new Transform2d(Meters.of(0),
-        Inches.of(13).div(2), new Rotation2d());
+    public static final Transform2d HORIZONTAL_BRANCH_DISTANCE_FROM_CENTER =
+        new Transform2d(Meters.of(0), Inches.of(13).div(2), new Rotation2d());
   }
 
   public class Vision {
     // AprilTag layout
-    public static final AprilTagFieldLayout aprilTagLayout = AprilTagFieldLayout
-        .loadField(AprilTagFields.kDefaultField);
+    public static final AprilTagFieldLayout aprilTagLayout =
+        AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
     // Camera names, must match names configured on coprocessor
     public static final String limeA = "limelight-a";
@@ -248,8 +243,10 @@ public final class Constants {
     // Robot to camera transforms for sim
     // (Not used by Limelight, configure in web UI instead)
     // TODO: Actual values
-    public static final Transform3d robotToLimeA = new Transform3d(0.2, 0.0, 0.2, new Rotation3d(0.0, -0.4, 0.0));
-    public static final Transform3d robotToLimeB = new Transform3d(-0.2, 0.0, 0.2, new Rotation3d(0.0, -0.4, Math.PI));
+    public static final Transform3d robotToLimeA =
+        new Transform3d(0.2, 0.0, 0.2, new Rotation3d(0.0, -0.4, 0.0));
+    public static final Transform3d robotToLimeB =
+        new Transform3d(-0.2, 0.0, 0.2, new Rotation3d(0.0, -0.4, Math.PI));
     public static final Transform3d robotToLimeC = new Transform3d();
 
     // Basic filtering thresholds
@@ -263,14 +260,16 @@ public final class Constants {
 
     // Standard deviation multipliers for each camera
     // (Adjust to trust some cameras more than others)
-    public static final double[] cameraStdDevFactors = new double[] {
-        1.0, // LimeA
-        1.0, // LimeB
-        1.0 // LimeC
-    };
+    public static final double[] cameraStdDevFactors =
+        new double[] {
+          1.0, // LimeA
+          1.0, // LimeB
+          1.0 // LimeC
+        };
 
     // Multipliers to apply for MegaTag 2 observations
     public static double linearStdDevMegatag2Factor = 0.5; // More stable than full 3D solve
-    public static double angularStdDevMegatag2Factor = Double.POSITIVE_INFINITY; // No rotation data available
+    public static double angularStdDevMegatag2Factor =
+        Double.POSITIVE_INFINITY; // No rotation data available
   }
 }
