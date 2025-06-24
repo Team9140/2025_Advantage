@@ -22,7 +22,7 @@ import org.team9140.frc2025.Constants;
 // Heavily inspired by Team Mechanical Advantage
 // https://github.com/Mechanical-Advantage/RobotCode2025Public/blob/main/src/main/java/org/littletonrobotics/frc2025/subsystems/superstructure/elevator
 public class ElevatorIOSim implements ElevatorIO {
-    public static final DCMotor gearbox =
+    private static final DCMotor gearbox =
             DCMotor.getKrakenX60Foc(2).withReduction(Constants.Elevator.GEAR_RATIO);
 
     // My understanding of this is that it is a matrix representing the ordinary
@@ -50,7 +50,7 @@ public class ElevatorIOSim implements ElevatorIO {
     //
     // Sorry if this explanation is scientifically inaccurate, but I tried my
     // best to explain it in a way that I understand.
-    public static final Matrix<N2, N2> A =
+    private static final Matrix<N2, N2> A =
             MatBuilder.fill(
                     Nat.N2(),
                     Nat.N2(),
@@ -69,7 +69,7 @@ public class ElevatorIOSim implements ElevatorIO {
     // current affects acceleration. This vector is multiplied by a scalar, u which
     // is the torque-producing current applied to the motor. The first cell of this
     // vector is 0.0 because current affects acceleration, and not velocity.
-    public static final Vector<N2> B =
+    private static final Vector<N2> B =
             VecBuilder.fill(
                     0.0,
                     gearbox.KtNMPerAmp

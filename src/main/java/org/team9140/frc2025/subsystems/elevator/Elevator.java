@@ -40,9 +40,11 @@ public class Elevator extends SubsystemBase {
                             Util.epsilonEquals(setpoint.position, goalState.position)
                                     && Util.epsilonEquals(setpoint.velocity, goalState.velocity));
 
-    private final ElevatorVisualizer measuredVisualizer = new ElevatorVisualizer("Measured");
-    private final ElevatorVisualizer setpointVisualizer = new ElevatorVisualizer("Setpoint");
-    private final ElevatorVisualizer goalVisualizer = new ElevatorVisualizer("Goal");
+    private final ElevatorVisualizer measuredVisualizer =
+            new ElevatorVisualizer("ElevatorMeasured");
+    private final ElevatorVisualizer setpointVisualizer =
+            new ElevatorVisualizer("ElevatorSetpoint");
+    private final ElevatorVisualizer goalVisualizer = new ElevatorVisualizer("ElevatorGoal");
 
     public Elevator(ElevatorIO io) {
         this.io = io;

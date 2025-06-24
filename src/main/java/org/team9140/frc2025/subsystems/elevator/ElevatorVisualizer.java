@@ -21,7 +21,7 @@ public class ElevatorVisualizer {
                         .getRoot(name + " Root", 0, 0)
                         .append(
                                 new LoggedMechanismLigament2d(
-                                        name + " Elevator",
+                                        name,
                                         Units.inchesToMeters(26.0),
                                         Constants.Elevator.ElevatorAngle.in(Degrees)));
     }

@@ -29,6 +29,10 @@ import org.team9140.frc2025.commands.DriveCommands;
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.helpers.AutoAiming;
 import org.team9140.frc2025.subsystems.cantdle.Cantdle;
+import org.team9140.frc2025.subsystems.climber.Climber;
+import org.team9140.frc2025.subsystems.climber.ClimberIO;
+import org.team9140.frc2025.subsystems.climber.ClimberIOSim;
+import org.team9140.frc2025.subsystems.climber.ClimberIOTalonFX;
 import org.team9140.frc2025.subsystems.drive.Drive;
 import org.team9140.frc2025.subsystems.drive.GyroIO;
 import org.team9140.frc2025.subsystems.drive.GyroIOPigeon2;
@@ -63,6 +67,7 @@ public class RobotContainer {
     private final CommandXboxController controller = new CommandXboxController(0);
     private final LoggedDashboardChooser<Command> autoChooser;
 
+    private final Climber climber;
     private final Drive drive;
     private final Elevator elevator;
     private final Manipulator manipulator;
@@ -108,6 +113,8 @@ public class RobotContainer {
                                         "sigma",
                                         Constants.Funnel.STATOR_LIMIT.in(Amps),
                                         Constants.Funnel.SUPPLY_LIMIT.in(Amps)));
+
+                climber = new Climber(new ClimberIOTalonFX());
                 break;
 
             case SIM:
@@ -149,6 +156,8 @@ public class RobotContainer {
                 // for this
                 funnel =
                         new Funnel(new RollerIOSim(DCMotor.getKrakenX60Foc(1), 0.004, 2.4 / 0.885));
+
+                climber = new Climber(new ClimberIOSim());
                 break;
 
             default:
@@ -173,6 +182,9 @@ public class RobotContainer {
                 manipulator = new Manipulator(new RollerIO() {});
 
                 funnel = new Funnel(new RollerIO() {});
+
+                climber = new Climber(new ClimberIO() {});
+
                 break;
         }
 
@@ -381,11 +393,14 @@ public class RobotContainer {
 
         this.controller.x().onTrue(this.elevator.setGoal(Constants.Elevator.STOW_height));
 
-        // this.controller.x()
-        // .whileTrue(this.climber.climb(this.controller.getHID()::getLeftTriggerAxis,
-        // this.controller.getHID()::getRightTriggerAxis));
-        // this.controller.back().onTrue(this.climber.prep());
-        // this.elevator.isUp.onTrue(this.drivetrain.engageSlowMode())
+        this.controller
+                .x()
+                .whileTrue(
+                        this.climber.climb(
+                                this.controller.getHID()::getLeftTriggerAxis,
+                                this.controller.getHID()::getRightTriggerAxis));
+        this.controller.back().onTrue(this.climber.prep());
+        // this.elevator.isUp.onTrue(this.drive.engageSlowMode())
         // .onFalse(this.drivetrain.disengageSlowMode());
     }
 
