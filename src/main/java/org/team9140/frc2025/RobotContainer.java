@@ -176,7 +176,7 @@ public class RobotContainer {
   private void configureButtonBindings() {
     drive.setDefaultCommand(
         DriveCommands.joystickDrive(
-            drive, controller::getLeftX, controller::getLeftY, controller::getRightX));
+            drive, controller::getLeftY, controller::getLeftX, () -> -controller.getRightX()));
 
     controller
         .rightTrigger()
