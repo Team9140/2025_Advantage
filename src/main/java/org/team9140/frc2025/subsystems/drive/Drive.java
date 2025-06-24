@@ -50,7 +50,6 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import java.util.concurrent.locks.Lock;
@@ -58,7 +57,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 import org.team9140.frc2025.Constants;
-import org.team9140.frc2025.Constants.ElevatorSetbacks;
 import org.team9140.frc2025.Constants.Mode;
 import org.team9140.frc2025.generated.TunerConstants;
 
@@ -421,15 +419,5 @@ public class Drive extends SubsystemBase {
             new Translation2d(
                     TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)
         };
-    }
-
-    public Command coralReefDrive(ElevatorSetbacks l4, boolean b) {
-        // TODO Actually make this
-        return new PrintCommand("coralReefDrive: Not implemented yet");
-    }
-
-    public Command algaeReefDrive() {
-        // TODO Actually make this
-        return new PrintCommand("coralReefDrive: Not implemented yet");
     }
 }

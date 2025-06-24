@@ -258,8 +258,7 @@ public class RobotContainer {
                 .y()
                 .and(this.controller.povRight())
                 .onTrue(
-                        this.drive
-                                .coralReefDrive(Constants.ElevatorSetbacks.L4, false)
+                        DriveCommands.coralReefDrive(drive, Constants.ElevatorSetbacks.L4, false)
                                 .alongWith(
                                         this.elevator.moveToPosition(
                                                 Constants.Elevator.L4_coral_height))
@@ -273,8 +272,7 @@ public class RobotContainer {
                 .y()
                 .and(this.controller.povLeft())
                 .onTrue(
-                        this.drive
-                                .coralReefDrive(Constants.ElevatorSetbacks.L4, true)
+                        DriveCommands.coralReefDrive(drive, Constants.ElevatorSetbacks.L4, true)
                                 .alongWith(
                                         this.elevator.moveToPosition(
                                                 Constants.Elevator.L4_coral_height))
@@ -297,8 +295,7 @@ public class RobotContainer {
                 .b()
                 .and(this.controller.povRight())
                 .onTrue(
-                        this.drive
-                                .coralReefDrive(Constants.ElevatorSetbacks.L3, false)
+                        DriveCommands.coralReefDrive(drive, Constants.ElevatorSetbacks.L3, false)
                                 .alongWith(
                                         this.elevator.moveToPosition(
                                                 Constants.Elevator.L3_coral_height))
@@ -312,8 +309,7 @@ public class RobotContainer {
                 .b()
                 .and(this.controller.povLeft())
                 .onTrue(
-                        this.drive
-                                .coralReefDrive(Constants.ElevatorSetbacks.L3, true)
+                        DriveCommands.coralReefDrive(drive, Constants.ElevatorSetbacks.L3, true)
                                 .alongWith(
                                         this.elevator.moveToPosition(
                                                 Constants.Elevator.L3_coral_height))
@@ -336,8 +332,7 @@ public class RobotContainer {
                 .isAlgaeing
                 .and(this.controller.rightBumper())
                 .onTrue(
-                        this.drive
-                                .algaeReefDrive()
+                        DriveCommands.algaeReefDrive(drive)
                                 .alongWith(
                                         this.cantdle.blinkColorForever(
                                                 Cantdle.PURPLE, Seconds.of(0.5)))
@@ -356,8 +351,7 @@ public class RobotContainer {
                 .a()
                 .and(this.controller.povRight())
                 .onTrue(
-                        this.drive
-                                .coralReefDrive(Constants.ElevatorSetbacks.L2, false)
+                        DriveCommands.coralReefDrive(drive, Constants.ElevatorSetbacks.L2, false)
                                 .alongWith(
                                         this.elevator.moveToPosition(
                                                 Constants.Elevator.L2_coral_height))
@@ -371,8 +365,7 @@ public class RobotContainer {
                 .a()
                 .and(this.controller.povLeft())
                 .onTrue(
-                        this.drive
-                                .coralReefDrive(Constants.ElevatorSetbacks.L2, true)
+                        DriveCommands.coralReefDrive(drive, Constants.ElevatorSetbacks.L2, true)
                                 .alongWith(
                                         this.elevator.moveToPosition(
                                                 Constants.Elevator.L2_coral_height))

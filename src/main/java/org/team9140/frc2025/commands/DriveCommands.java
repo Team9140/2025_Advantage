@@ -13,9 +13,9 @@
 
 package org.team9140.frc2025.commands;
 
-import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -36,16 +36,29 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 import org.team9140.frc2025.Constants;
+import org.team9140.frc2025.Constants.ElevatorSetbacks;
+import org.team9140.frc2025.helpers.AutoAiming;
 import org.team9140.frc2025.subsystems.drive.Drive;
+import org.team9140.lib.Util;
 
 public class DriveCommands {
     private static final double DEADBAND = 0.1;
     private static final double ANGLE_KP = Constants.Drive.HEADING_CONTROLLER_P;
-    private static final double ANGLE_KD = Constants.Drive.HEADING_CONTROLLER_I;
-    private static final double ANGLE_MAX_VELOCITY =
-            Constants.Drive.MAX_teleop_rotation.in(RadiansPerSecond);
-    private static final double ANGLE_MAX_ACCELERATION = 20.0; // TODO: Find actual value
+    private static final double ANGLE_KI = Constants.Drive.HEADING_CONTROLLER_I;
+    private static final double ANGLE_KD = Constants.Drive.HEADING_CONTROLLER_D;
+    private static final double ANGLE_MAX_VELOCITY = Math.PI * 3 / 2; // Radians per second
+    private static final double ANGLE_MAX_ACCELERATION =
+            20.0; // TODO: Find actual value in radians per second
+    // squared
+    private static final double TRANSLATE_KP = Constants.Drive.TRANSLATE_CONTROLLER_P;
+    private static final double TRANSLATE_KI = Constants.Drive.TRANSLATE_CONTROLLER_I;
+    private static final double TRANSLATE_KD = Constants.Drive.TRANSLATE_CONTROLLER_D;
+    private static final double TRANSLATE_MAX_VELOCITY = 1.75; // Meters per second
+    private static final double TRANSLATE_MAX_ACCELERATION =
+            10.0; // TODO: Find actual value in meters per second
+    // squared
     private static final double FF_START_DELAY = 2.0; // Secs
     private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
     private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
@@ -55,7 +68,7 @@ public class DriveCommands {
 
     private static Translation2d getLinearVelocityFromJoysticks(double x, double y) {
         // Apply deadband
-        double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), DEADBAND);
+        double linearMagnitude = Util.applyDeadband(Math.hypot(x, y), DEADBAND);
         Rotation2d linearDirection = new Rotation2d(Math.atan2(y, x));
 
         // Square magnitude for more precise control
@@ -83,7 +96,7 @@ public class DriveCommands {
                                     xSupplier.getAsDouble(), ySupplier.getAsDouble());
 
                     // Apply rotation deadband
-                    double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
+                    double omega = Util.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
 
                     // Square rotation value for more precise control
                     omega = Math.copySign(omega * omega, omega);
@@ -91,8 +104,12 @@ public class DriveCommands {
                     // Convert to field relative speeds & send command
                     ChassisSpeeds speeds =
                             new ChassisSpeeds(
-                                    linearVelocity.getX() * drive.getMaxLinearSpeedMetersPerSec(),
-                                    linearVelocity.getY() * drive.getMaxLinearSpeedMetersPerSec(),
+                                    linearVelocity.getX()
+                                            * Constants.Drive.MAX_teleop_velocity.in(
+                                                    MetersPerSecond),
+                                    linearVelocity.getY()
+                                            * Constants.Drive.MAX_teleop_velocity.in(
+                                                    MetersPerSecond),
                                     omega * drive.getMaxAngularSpeedRadPerSec());
                     boolean isFlipped =
                             DriverStation.getAlliance().isPresent()
@@ -122,10 +139,11 @@ public class DriveCommands {
         ProfiledPIDController angleController =
                 new ProfiledPIDController(
                         ANGLE_KP,
-                        0.0,
+                        ANGLE_KI,
                         ANGLE_KD,
                         new TrapezoidProfile.Constraints(
-                                ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
+                                ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION),
+                        Constants.LOOP_PERIOD.in(Seconds));
         angleController.enableContinuousInput(-Math.PI, Math.PI);
 
         // Construct command
@@ -322,5 +340,72 @@ public class DriveCommands {
         double[] positions = new double[4];
         Rotation2d lastAngle = new Rotation2d();
         double gyroDelta = 0.0;
+    }
+
+    public static Command trapezoidToPose(Drive drive, Supplier<Pose2d> targetSupplier) {
+        // Maybe use Phoenix PID controllers?
+        ProfiledPIDController angleController =
+                new ProfiledPIDController(
+                        ANGLE_KP,
+                        ANGLE_KI,
+                        ANGLE_KD,
+                        new TrapezoidProfile.Constraints(
+                                ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
+        angleController.enableContinuousInput(-Math.PI, Math.PI);
+
+        ProfiledPIDController pathXController =
+                new ProfiledPIDController(
+                        TRANSLATE_KP,
+                        TRANSLATE_KI,
+                        TRANSLATE_KD,
+                        new TrapezoidProfile.Constraints(
+                                TRANSLATE_MAX_VELOCITY, TRANSLATE_MAX_ACCELERATION));
+        ProfiledPIDController pathYController =
+                new ProfiledPIDController(
+                        TRANSLATE_KP,
+                        TRANSLATE_KI,
+                        TRANSLATE_KD,
+                        new TrapezoidProfile.Constraints(
+                                TRANSLATE_MAX_VELOCITY, TRANSLATE_MAX_ACCELERATION));
+
+        return Commands.run(
+                () -> {
+                    Pose2d pose = drive.getPose();
+                    Pose2d target = targetSupplier.get();
+
+                    double vx = pathXController.calculate(pose.getX(), target.getX());
+                    double vy = pathYController.calculate(pose.getY(), target.getY());
+                    double omega =
+                            angleController.calculate(
+                                    pose.getRotation().getRadians(),
+                                    target.getRotation().getRadians());
+                    Logger.recordOutput("Trapezoid vx", vx);
+                    Logger.recordOutput("Trapezoid vy", vy);
+                    Logger.recordOutput("Trapezoid omega", omega);
+
+                    drive.runVelocity(new ChassisSpeeds(vx, vy, omega));
+                },
+                drive);
+    }
+
+    public static Command coralReefDrive(Drive drive, ElevatorSetbacks level, boolean lefty) {
+        return trapezoidToPose(
+                        drive,
+                        () -> {
+                            AutoAiming.ReefFaces closestReef =
+                                    AutoAiming.getClosestFace(drive.getPose().getTranslation());
+
+                            return lefty ? closestReef.getLeft(level) : closestReef.getRight(level);
+                        })
+                .withName("coral drive");
+    }
+
+    public static Command algaeReefDrive(Drive drive) {
+        return trapezoidToPose(
+                        drive,
+                        () ->
+                                AutoAiming.getClosestFace(drive.getPose().getTranslation())
+                                        .getCenter())
+                .withName("coral drive");
     }
 }
