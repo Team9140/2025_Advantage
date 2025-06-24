@@ -11,39 +11,39 @@ import org.team9140.lib.rollers.RollerIO;
 import org.team9140.lib.rollers.RollerIOInputsAutoLogged;
 
 public class Funnel extends SubsystemBase {
-  RollerIO motor;
-  RollerIOInputsAutoLogged inputs = new RollerIOInputsAutoLogged();
+    RollerIO motor;
+    RollerIOInputsAutoLogged inputs = new RollerIOInputsAutoLogged();
 
-  public Funnel(RollerIO motor) {
-    this.motor = motor;
+    public Funnel(RollerIO motor) {
+        this.motor = motor;
 
-    this.motor.setBrakeMode(true);
-    this.motor.setInverted(false);
+        this.motor.setBrakeMode(true);
+        this.motor.setInverted(false);
 
-    this.motor.stop();
+        this.motor.stop();
 
-    this.setDefaultCommand(this.stop());
-  }
+        this.setDefaultCommand(this.stop());
+    }
 
-  @Override
-  public void periodic() {
-    motor.updateInputs(inputs);
-    Logger.processInputs("Funnel", inputs);
-  }
+    @Override
+    public void periodic() {
+        motor.updateInputs(inputs);
+        Logger.processInputs("Funnel", inputs);
+    }
 
-  public Command stop() {
-    return this.runOnce(() -> this.motor.stop()).withName("off");
-  }
+    public Command stop() {
+        return this.runOnce(() -> this.motor.stop()).withName("off");
+    }
 
-  public Command intakeCoral() {
-    return this.setVoltage(Constants.Funnel.INTAKE_VOLTAGE).withName("intake coral");
-  }
+    public Command intakeCoral() {
+        return this.setVoltage(Constants.Funnel.INTAKE_VOLTAGE).withName("intake coral");
+    }
 
-  public Command setVoltage(Voltage v) {
-    return this.run(() -> this.motor.runVolts(v.in(Volts)));
-  }
+    public Command setVoltage(Voltage v) {
+        return this.run(() -> this.motor.runVolts(v.in(Volts)));
+    }
 
-  public Command unstickCoral() {
-    return this.setVoltage(Constants.Funnel.UNSTICK_VOLTAGE).withName("unstick coral");
-  }
+    public Command unstickCoral() {
+        return this.setVoltage(Constants.Funnel.UNSTICK_VOLTAGE).withName("unstick coral");
+    }
 }

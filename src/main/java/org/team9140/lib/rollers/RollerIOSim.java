@@ -12,46 +12,46 @@ import org.team9140.frc2025.Constants;
 // Heavily inspired by Team Mechanical Advantage
 // https://github.com/Mechanical-Advantage/RobotCode2025Public/blob/main/src/main/java/org/littletonrobotics/frc2025/subsystems/rollers/
 public class RollerIOSim implements RollerIO {
-  private final DCMotor motor;
-  private final DCMotorSim motorSim;
-  private byte sign = 1;
+    private final DCMotor motor;
+    private final DCMotorSim motorSim;
+    private byte sign = 1;
 
-  public RollerIOSim(DCMotor motor, double moi, double gear_ratio) {
-    this.motor = motor;
-    this.motorSim =
-        new DCMotorSim(LinearSystemId.createDCMotorSystem(motor, moi, gear_ratio), motor);
-  }
-
-  @Override
-  public void updateInputs(RollerIOInputs inputs) {
-    if (DriverStation.isDisabled()) {
-      runVolts(0.0);
+    public RollerIOSim(DCMotor motor, double moi, double gear_ratio) {
+        this.motor = motor;
+        this.motorSim =
+                new DCMotorSim(LinearSystemId.createDCMotorSystem(motor, moi, gear_ratio), motor);
     }
 
-    motorSim.update(Constants.LOOP_PERIOD.in(Seconds));
+    @Override
+    public void updateInputs(RollerIOInputs inputs) {
+        if (DriverStation.isDisabled()) {
+            runVolts(0.0);
+        }
 
-    inputs.data =
-        new RollerIOData(
-            motorSim.getInputVoltage(),
-            motorSim.getCurrentDrawAmps(),
-            motor.getCurrent(motorSim.getTorqueNewtonMeters()),
-            0.0,
-            false,
-            true);
-  }
+        motorSim.update(Constants.LOOP_PERIOD.in(Seconds));
 
-  @Override
-  public void runVolts(double volts) {
-    motorSim.setInputVoltage(MathUtil.clamp(volts, -12.0, 12.0) * sign);
-  }
+        inputs.data =
+                new RollerIOData(
+                        motorSim.getInputVoltage(),
+                        motorSim.getCurrentDrawAmps(),
+                        motor.getCurrent(motorSim.getTorqueNewtonMeters()),
+                        0.0,
+                        false,
+                        true);
+    }
 
-  @Override
-  public void stop() {
-    runVolts(0.0);
-  }
+    @Override
+    public void runVolts(double volts) {
+        motorSim.setInputVoltage(MathUtil.clamp(volts, -12.0, 12.0) * sign);
+    }
 
-  @Override
-  public void setInverted(boolean inverted) {
-    sign = (byte) (inverted ? -1 : 1);
-  }
+    @Override
+    public void stop() {
+        runVolts(0.0);
+    }
+
+    @Override
+    public void setInverted(boolean inverted) {
+        sign = (byte) (inverted ? -1 : 1);
+    }
 }

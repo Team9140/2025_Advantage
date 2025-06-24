@@ -49,12 +49,9 @@ import org.team9140.lib.rollers.RollerIOTalonFX;
 import org.team9140.lib.rollers.RollerIOTalonSRX;
 
 /**
- * This class is where the bulk of the robot should be declared. Since
- * Command-based is a
- * "declarative" paradigm, very little robot logic should actually be handled in
- * the {@link Robot}
- * periodic methods (other than the scheduler calls). Instead, the structure of
- * the robot (including
+ * This class is where the bulk of the robot should be declared. Since Command-based is a
+ * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
+ * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
@@ -69,104 +66,110 @@ public class RobotContainer {
     private final Manipulator manipulator;
     private final Funnel funnel;
 
-    private final Trigger stickInput = new Trigger(
-            () -> Math.abs(this.controller.getLeftX()) > 0.35
-                    || Math.abs(this.controller.getLeftY()) > 0.35
-                    || Math.abs(this.controller.getRightX()) > 0.35);
+    private final Trigger stickInput =
+            new Trigger(
+                    () ->
+                            Math.abs(this.controller.getLeftX()) > 0.35
+                                    || Math.abs(this.controller.getLeftY()) > 0.35
+                                    || Math.abs(this.controller.getRightX()) > 0.35);
 
-    /**
-     * The container for the robot. Contains subsystems, OI devices, and commands.
-     */
+    /** The container for the robot. Contains subsystems, OI devices, and commands. */
     public RobotContainer() {
         switch (Constants.currentMode) {
             case REAL:
                 // Real robot, instantiate hardware IO implementations
-                drive = new Drive(
-                        new GyroIOPigeon2(),
-                        new ModuleIOTalonFX(TunerConstants.FrontLeft),
-                        new ModuleIOTalonFX(TunerConstants.FrontRight),
-                        new ModuleIOTalonFX(TunerConstants.BackLeft),
-                        new ModuleIOTalonFX(TunerConstants.BackRight));
+                drive =
+                        new Drive(
+                                new GyroIOPigeon2(),
+                                new ModuleIOTalonFX(TunerConstants.FrontLeft),
+                                new ModuleIOTalonFX(TunerConstants.FrontRight),
+                                new ModuleIOTalonFX(TunerConstants.BackLeft),
+                                new ModuleIOTalonFX(TunerConstants.BackRight));
 
-                vision = new Vision(
-                        drive::addVisionMeasurement,
-                        new VisionIOLimelight(Constants.Vision.limeA, drive::getRotation),
-                        new VisionIOLimelight(Constants.Vision.limeB, drive::getRotation),
-                        new VisionIOLimelight(Constants.Vision.limeC, drive::getRotation));
+                vision =
+                        new Vision(
+                                drive::addVisionMeasurement,
+                                new VisionIOLimelight(Constants.Vision.limeA, drive::getRotation),
+                                new VisionIOLimelight(Constants.Vision.limeB, drive::getRotation),
+                                new VisionIOLimelight(Constants.Vision.limeC, drive::getRotation));
 
                 elevator = new Elevator(new ElevatorIOTalonFX());
 
-                manipulator = new Manipulator(new RollerIOTalonSRX(Constants.Ports.MANIPULATOR_MOTOR));
+                manipulator =
+                        new Manipulator(new RollerIOTalonSRX(Constants.Ports.MANIPULATOR_MOTOR));
 
-                funnel = new Funnel(
-                        new RollerIOTalonFX(
-                                Constants.Ports.FUNNEL_MOTOR,
-                                "sigma",
-                                Constants.Funnel.STATOR_LIMIT.in(Amps),
-                                Constants.Funnel.SUPPLY_LIMIT.in(Amps)));
+                funnel =
+                        new Funnel(
+                                new RollerIOTalonFX(
+                                        Constants.Ports.FUNNEL_MOTOR,
+                                        "sigma",
+                                        Constants.Funnel.STATOR_LIMIT.in(Amps),
+                                        Constants.Funnel.SUPPLY_LIMIT.in(Amps)));
                 break;
 
             case SIM:
                 // Sim robot, instantiate physics sim IO implementations
-                drive = new Drive(
-                        new GyroIO() {
-                        },
-                        new ModuleIOSim(TunerConstants.FrontLeft),
-                        new ModuleIOSim(TunerConstants.FrontRight),
-                        new ModuleIOSim(TunerConstants.BackLeft),
-                        new ModuleIOSim(TunerConstants.BackRight));
+                drive =
+                        new Drive(
+                                new GyroIO() {},
+                                new ModuleIOSim(TunerConstants.FrontLeft),
+                                new ModuleIOSim(TunerConstants.FrontRight),
+                                new ModuleIOSim(TunerConstants.BackLeft),
+                                new ModuleIOSim(TunerConstants.BackRight));
 
-                vision = new Vision(
-                        drive::addVisionMeasurement,
-                        new VisionIOPhotonVisionSim(
-                                Constants.Vision.limeA, Constants.Vision.robotToLimeA, drive::getPose),
-                        new VisionIOPhotonVisionSim(
-                                Constants.Vision.limeB, Constants.Vision.robotToLimeB, drive::getPose),
-                        new VisionIOPhotonVisionSim(
-                                Constants.Vision.limeC, Constants.Vision.robotToLimeC, drive::getPose));
+                vision =
+                        new Vision(
+                                drive::addVisionMeasurement,
+                                new VisionIOPhotonVisionSim(
+                                        Constants.Vision.limeA,
+                                        Constants.Vision.robotToLimeA,
+                                        drive::getPose),
+                                new VisionIOPhotonVisionSim(
+                                        Constants.Vision.limeB,
+                                        Constants.Vision.robotToLimeB,
+                                        drive::getPose),
+                                new VisionIOPhotonVisionSim(
+                                        Constants.Vision.limeC,
+                                        Constants.Vision.robotToLimeC,
+                                        drive::getPose));
 
                 elevator = new Elevator(new ElevatorIOSim());
 
                 // moi is made up tbh, and the gear ratio is weird cuz it drives two different
                 // rods at different gear ratios. lowkey sim is unnecessary for this
-                manipulator = new Manipulator(new RollerIOSim(DCMotor.getAndymarkRs775_125(1), 0.004, 1.96 / 0.48));
+                manipulator =
+                        new Manipulator(
+                                new RollerIOSim(
+                                        DCMotor.getAndymarkRs775_125(1), 0.004, 1.96 / 0.48));
 
                 // Again, don't know the moi, could calculate later but sim ain't too important
                 // for this
-                funnel = new Funnel(new RollerIOSim(DCMotor.getKrakenX60Foc(1), 0.004, 2.4 / 0.885));
+                funnel =
+                        new Funnel(new RollerIOSim(DCMotor.getKrakenX60Foc(1), 0.004, 2.4 / 0.885));
                 break;
 
             default:
                 // Replayed robot, disable IO implementations
-                drive = new Drive(
-                        new GyroIO() {
-                        },
-                        new ModuleIO() {
-                        },
-                        new ModuleIO() {
-                        },
-                        new ModuleIO() {
-                        },
-                        new ModuleIO() {
-                        });
+                drive =
+                        new Drive(
+                                new GyroIO() {},
+                                new ModuleIO() {},
+                                new ModuleIO() {},
+                                new ModuleIO() {},
+                                new ModuleIO() {});
 
-                vision = new Vision(
-                        drive::addVisionMeasurement,
-                        new VisionIO() {
-                        },
-                        new VisionIO() {
-                        },
-                        new VisionIO() {
-                        });
+                vision =
+                        new Vision(
+                                drive::addVisionMeasurement,
+                                new VisionIO() {},
+                                new VisionIO() {},
+                                new VisionIO() {});
 
-                elevator = new Elevator(new ElevatorIO() {
-                });
+                elevator = new Elevator(new ElevatorIO() {});
 
-                manipulator = new Manipulator(new RollerIO() {
-                });
+                manipulator = new Manipulator(new RollerIO() {});
 
-                funnel = new Funnel(new RollerIO() {
-                });
+                funnel = new Funnel(new RollerIO() {});
                 break;
         }
 
@@ -175,9 +178,11 @@ public class RobotContainer {
 
         // Set up SysId routines
         autoChooser.addOption(
-                "Drive Wheel Radius Characterization", DriveCommands.wheelRadiusCharacterization(drive));
+                "Drive Wheel Radius Characterization",
+                DriveCommands.wheelRadiusCharacterization(drive));
         autoChooser.addOption(
-                "Drive Simple FF Characterization", DriveCommands.feedforwardCharacterization(drive));
+                "Drive Simple FF Characterization",
+                DriveCommands.feedforwardCharacterization(drive));
         autoChooser.addOption(
                 "Drive SysId (Quasistatic Forward)",
                 drive.sysIdQuasistatic(SysIdRoutine.Direction.kForward));
@@ -185,26 +190,29 @@ public class RobotContainer {
                 "Drive SysId (Quasistatic Reverse)",
                 drive.sysIdQuasistatic(SysIdRoutine.Direction.kReverse));
         autoChooser.addOption(
-                "Drive SysId (Dynamic Forward)", drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
+                "Drive SysId (Dynamic Forward)",
+                drive.sysIdDynamic(SysIdRoutine.Direction.kForward));
         autoChooser.addOption(
-                "Drive SysId (Dynamic Reverse)", drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
+                "Drive SysId (Dynamic Reverse)",
+                drive.sysIdDynamic(SysIdRoutine.Direction.kReverse));
 
         // Configure the button bindings
         configureButtonBindings();
     }
 
     /**
-     * Use this method to define your button->command mappings. Buttons can be
-     * created by
+     * Use this method to define your button->command mappings. Buttons can be created by
      * instantiating a {@link GenericHID} or one of its subclasses ({@link
-     * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing
-     * it to a {@link
+     * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
      * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
      */
     private void configureButtonBindings() {
         drive.setDefaultCommand(
                 DriveCommands.joystickDrive(
-                        drive, controller::getLeftY, controller::getLeftX, () -> -controller.getRightX()));
+                        drive,
+                        controller::getLeftY,
+                        controller::getLeftX,
+                        () -> -controller.getRightX()));
 
         controller
                 .rightTrigger()
@@ -237,7 +245,9 @@ public class RobotContainer {
                 .onTrue(
                         this.drive
                                 .coralReefDrive(Constants.ElevatorSetbacks.L4, false)
-                                .alongWith(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
+                                .alongWith(
+                                        this.elevator.moveToPosition(
+                                                Constants.Elevator.L4_coral_height))
                                 // .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
                                 // Seconds.of(0.5)))
                                 .until(this.stickInput)
@@ -249,7 +259,9 @@ public class RobotContainer {
                 .onTrue(
                         this.drive
                                 .coralReefDrive(Constants.ElevatorSetbacks.L4, true)
-                                .alongWith(this.elevator.moveToPosition(Constants.Elevator.L4_coral_height))
+                                .alongWith(
+                                        this.elevator.moveToPosition(
+                                                Constants.Elevator.L4_coral_height))
                                 // .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
                                 // Seconds.of(0.5)))
                                 .until(this.stickInput)
@@ -259,7 +271,10 @@ public class RobotContainer {
                 .y()
                 .and(this.controller.povCenter())
                 .and(this.manipulator.hasAlgae)
-                .onTrue(this.elevator.moveToPosition(Constants.Elevator.NET_HEIGHT).withName("net height"));
+                .onTrue(
+                        this.elevator
+                                .moveToPosition(Constants.Elevator.NET_HEIGHT)
+                                .withName("net height"));
 
         this.controller
                 .b()
@@ -267,7 +282,9 @@ public class RobotContainer {
                 .onTrue(
                         this.drive
                                 .coralReefDrive(Constants.ElevatorSetbacks.L3, false)
-                                .alongWith(this.elevator.moveToPosition(Constants.Elevator.L3_coral_height))
+                                .alongWith(
+                                        this.elevator.moveToPosition(
+                                                Constants.Elevator.L3_coral_height))
                                 // .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
                                 // Seconds.of(0.5)))
                                 .until(this.stickInput)
@@ -279,7 +296,9 @@ public class RobotContainer {
                 .onTrue(
                         this.drive
                                 .coralReefDrive(Constants.ElevatorSetbacks.L3, true)
-                                .alongWith(this.elevator.moveToPosition(Constants.Elevator.L3_coral_height))
+                                .alongWith(
+                                        this.elevator.moveToPosition(
+                                                Constants.Elevator.L3_coral_height))
                                 // .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
                                 // Seconds.of(0.5)))
                                 .until(this.stickInput)
@@ -294,7 +313,8 @@ public class RobotContainer {
                                 .until(this.stickInput)
                                 .withName("highish (level 3) algae center"));
 
-        this.elevator.isAlgaeing
+        this.elevator
+                .isAlgaeing
                 .and(this.controller.rightBumper())
                 .onTrue(
                         this.drive
@@ -303,8 +323,12 @@ public class RobotContainer {
                                 // Seconds.of(0.5)))
                                 .alongWith(
                                         this.elevator.moveToPosition(
-                                                () -> AutoAiming.getClosestFace(this.drive.getPose().getTranslation())
-                                                        .getAlgaeElevatorHeight()))
+                                                () ->
+                                                        AutoAiming.getClosestFace(
+                                                                        this.drive
+                                                                                .getPose()
+                                                                                .getTranslation())
+                                                                .getAlgaeElevatorHeight()))
                                 .until(this.stickInput)
                                 .withName("autoaiming algae"));
 
@@ -314,7 +338,9 @@ public class RobotContainer {
                 .onTrue(
                         this.drive
                                 .coralReefDrive(Constants.ElevatorSetbacks.L2, false)
-                                .alongWith(this.elevator.moveToPosition(Constants.Elevator.L2_coral_height))
+                                .alongWith(
+                                        this.elevator.moveToPosition(
+                                                Constants.Elevator.L2_coral_height))
                                 // .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
                                 // Seconds.of(0.5)))
                                 .until(this.stickInput)
@@ -326,7 +352,9 @@ public class RobotContainer {
                 .onTrue(
                         this.drive
                                 .coralReefDrive(Constants.ElevatorSetbacks.L2, true)
-                                .alongWith(this.elevator.moveToPosition(Constants.Elevator.L2_coral_height))
+                                .alongWith(
+                                        this.elevator.moveToPosition(
+                                                Constants.Elevator.L2_coral_height))
                                 // .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
                                 // Seconds.of(0.5)))
                                 .until(this.stickInput)

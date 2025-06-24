@@ -19,112 +19,113 @@ import org.team9140.lib.rollers.RollerIO;
 import org.team9140.lib.rollers.RollerIOInputsAutoLogged;
 
 public class Manipulator extends SubsystemBase {
-  private RollerIOInputsAutoLogged rollerIOInputs = new RollerIOInputsAutoLogged();
-  private RollerIO rollerIO;
+    private RollerIOInputsAutoLogged rollerIOInputs = new RollerIOInputsAutoLogged();
+    private RollerIO rollerIO;
 
-  enum ManipulatorState {
-    IDLE(0.0),
-    INTAKE_ALGAE(INTAKE_VOLTAGE_ALGAE),
-    INTAKE_CORAL(INTAKE_VOLTAGE_CORAL),
-    OUTTAKE_ALGAE(OUTTAKE_VOLTAGE_ALGAE),
-    OUTTAKE_CORAL(OUTTAKE_VOLTAGE_CORAL),
-    HOLD_ALGAE(HOLD_VOLTAGE_ALGAE),
-    UNSTICK_CORAL(-INTAKE_VOLTAGE_CORAL);
+    enum ManipulatorState {
+        IDLE(0.0),
+        INTAKE_ALGAE(INTAKE_VOLTAGE_ALGAE),
+        INTAKE_CORAL(INTAKE_VOLTAGE_CORAL),
+        OUTTAKE_ALGAE(OUTTAKE_VOLTAGE_ALGAE),
+        OUTTAKE_CORAL(OUTTAKE_VOLTAGE_CORAL),
+        HOLD_ALGAE(HOLD_VOLTAGE_ALGAE),
+        UNSTICK_CORAL(-INTAKE_VOLTAGE_CORAL);
 
-    private double voltage;
+        private double voltage;
 
-    ManipulatorState(double voltage) {
-      this.voltage = voltage;
+        ManipulatorState(double voltage) {
+            this.voltage = voltage;
+        }
+
+        public double getVoltage() {
+            return voltage;
+        }
     }
 
-    public double getVoltage() {
-      return voltage;
+    private ManipulatorState state = ManipulatorState.IDLE;
+
+    enum Holdable {
+        WATER,
+        ALGAE,
+        CORAL
     }
-  }
 
-  private ManipulatorState state = ManipulatorState.IDLE;
+    // Will not switch away from coral unless algae is intooken cuz we can't ensure
+    // that the coral actually fell.
+    private Holdable currentItem = Holdable.WATER;
 
-  enum Holdable {
-    WATER,
-    ALGAE,
-    CORAL
-  }
+    public Manipulator(RollerIO rollerIO) {
+        this.rollerIO = rollerIO;
+        this.rollerIO.setBrakeMode(true);
+        this.rollerIO.setInverted(false);
 
-  // Will not switch away from coral unless algae is intooken cuz we can't ensure
-  // that the coral actually fell.
-  private Holdable currentItem = Holdable.WATER;
+        this.setDefaultCommand(this.stop());
+    }
 
-  public Manipulator(RollerIO rollerIO) {
-    this.rollerIO = rollerIO;
-    this.rollerIO.setBrakeMode(true);
-    this.rollerIO.setInverted(false);
+    public void periodic() {
+        rollerIO.updateInputs(rollerIOInputs);
+        Logger.processInputs("Manipulator", rollerIOInputs);
+        rollerIO.runVolts(state.getVoltage());
+    }
 
-    this.setDefaultCommand(this.stop());
-  }
+    public Command intakeAlgae() {
+        return this.runOnce(
+                        () -> {
+                            this.currentItem = Holdable.ALGAE;
+                            this.state = ManipulatorState.INTAKE_ALGAE;
+                        })
+                .withName("intake algae");
+    }
 
-  public void periodic() {
-    rollerIO.updateInputs(rollerIOInputs);
-    Logger.processInputs("Manipulator", rollerIOInputs);
-    rollerIO.runVolts(state.getVoltage());
-  }
+    public Command intakeCoral() {
+        return this.runOnce(
+                        () -> {
+                            this.currentItem = Holdable.CORAL;
+                            this.state = ManipulatorState.INTAKE_CORAL;
+                        })
+                .withName("intake coral");
+    }
 
-  public Command intakeAlgae() {
-    return this.runOnce(
-            () -> {
-              this.currentItem = Holdable.ALGAE;
-              this.state = ManipulatorState.INTAKE_ALGAE;
-            })
-        .withName("intake algae");
-  }
+    public Command outtake() {
+        return this.runOnce(
+                        () -> {
+                            this.state =
+                                    switch (currentItem) {
+                                        case ALGAE -> ManipulatorState.OUTTAKE_ALGAE;
+                                        case CORAL -> ManipulatorState.OUTTAKE_CORAL;
+                                        default -> ManipulatorState.IDLE;
+                                    };
 
-  public Command intakeCoral() {
-    return this.runOnce(
-            () -> {
-              this.currentItem = Holdable.CORAL;
-              this.state = ManipulatorState.INTAKE_CORAL;
-            })
-        .withName("intake coral");
-  }
+                            currentItem =
+                                    currentItem == Holdable.ALGAE ? Holdable.WATER : currentItem;
+                        })
+                .withName("outtake");
+    }
 
-  public Command outtake() {
-    return this.runOnce(
-            () -> {
-              this.state =
-                  switch (currentItem) {
-                    case ALGAE -> ManipulatorState.OUTTAKE_ALGAE;
-                    case CORAL -> ManipulatorState.OUTTAKE_CORAL;
-                    default -> ManipulatorState.IDLE;
-                  };
+    public Command unstickCoral() {
+        return this.runOnce(() -> this.state = ManipulatorState.UNSTICK_CORAL)
+                .withName("unstick coral");
+    }
 
-              currentItem = currentItem == Holdable.ALGAE ? Holdable.WATER : currentItem;
-            })
-        .withName("outtake");
-  }
+    public Command stop() {
+        return this.runOnce(
+                        () -> {
+                            this.state =
+                                    switch (this.state) {
+                                        case INTAKE_ALGAE -> ManipulatorState.HOLD_ALGAE;
+                                        default -> ManipulatorState.IDLE;
+                                    };
+                        })
+                .withName("idle (hold or stop)");
+    }
 
-  public Command unstickCoral() {
-    return this.runOnce(() -> this.state = ManipulatorState.UNSTICK_CORAL)
-        .withName("unstick coral");
-  }
+    public final Trigger hasCoral = new Trigger(() -> this.currentItem.equals(Holdable.CORAL));
+    public final Trigger hasAlgae = new Trigger(() -> this.currentItem.equals(Holdable.ALGAE));
 
-  public Command stop() {
-    return this.runOnce(
-            () -> {
-              this.state =
-                  switch (this.state) {
-                    case INTAKE_ALGAE -> ManipulatorState.HOLD_ALGAE;
-                    default -> ManipulatorState.IDLE;
-                  };
-            })
-        .withName("idle (hold or stop)");
-  }
-
-  public final Trigger hasCoral = new Trigger(() -> this.currentItem.equals(Holdable.CORAL));
-  public final Trigger hasAlgae = new Trigger(() -> this.currentItem.equals(Holdable.ALGAE));
-
-  public final Trigger justIntookenGamePooken =
-      new Trigger(
-              () ->
-                  Amps.of(Math.abs(this.rollerIOInputs.data.torqueCurrentAmps()))
-                      .gt(HOLD_AMPERAGE_GAME_PIECE))
-          .debounce(INTOOKEN_TIME.in(Seconds), Debouncer.DebounceType.kBoth);
+    public final Trigger justIntookenGamePooken =
+            new Trigger(
+                            () ->
+                                    Amps.of(Math.abs(this.rollerIOInputs.data.torqueCurrentAmps()))
+                                            .gt(HOLD_AMPERAGE_GAME_PIECE))
+                    .debounce(INTOOKEN_TIME.in(Seconds), Debouncer.DebounceType.kBoth);
 }
