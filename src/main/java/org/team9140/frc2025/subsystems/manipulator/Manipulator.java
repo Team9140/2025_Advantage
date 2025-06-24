@@ -14,6 +14,7 @@ import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import org.littletonrobotics.junction.Logger;
 import org.team9140.lib.rollers.RollerIO;
 import org.team9140.lib.rollers.RollerIOInputsAutoLogged;
 
@@ -57,10 +58,13 @@ public class Manipulator extends SubsystemBase {
     this.rollerIO = rollerIO;
     this.rollerIO.setBrakeMode(true);
     this.rollerIO.setInverted(false);
+
+    this.setDefaultCommand(this.stop());
   }
 
   public void periodic() {
     rollerIO.updateInputs(rollerIOInputs);
+    Logger.processInputs("Manipulator", rollerIOInputs);
     rollerIO.runVolts(state.getVoltage());
   }
 

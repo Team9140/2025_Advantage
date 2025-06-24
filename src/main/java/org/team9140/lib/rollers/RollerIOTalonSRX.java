@@ -15,6 +15,7 @@ public class RollerIOTalonSRX implements RollerIO {
   public RollerIOTalonSRX(int motorId) {
     this.motor = new TalonSRX(motorId);
 
+    // TODO: Don't reference Constants in here, take it in as a parameter
     this.motor.configPeakCurrentLimit((int) MANIPULATOR_PEAK_CURRENT_LIMIT.in(Amps));
     this.motor.configPeakCurrentDuration((int) MANIPULATOR_PEAK_CURRENT_DURATION.in(Milliseconds));
     this.motor.configContinuousCurrentLimit((int) MANIPULATOR_CONTINUOUS_CURRENT_LIMIT.in(Amps));
