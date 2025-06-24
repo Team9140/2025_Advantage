@@ -14,6 +14,7 @@
 package org.team9140.frc2025;
 
 import static edu.wpi.first.units.Units.Amps;
+import static edu.wpi.first.units.Units.Seconds;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -27,6 +28,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.team9140.frc2025.commands.DriveCommands;
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.helpers.AutoAiming;
+import org.team9140.frc2025.subsystems.cantdle.Cantdle;
 import org.team9140.frc2025.subsystems.drive.Drive;
 import org.team9140.frc2025.subsystems.drive.GyroIO;
 import org.team9140.frc2025.subsystems.drive.GyroIOPigeon2;
@@ -65,6 +67,7 @@ public class RobotContainer {
     private final Elevator elevator;
     private final Manipulator manipulator;
     private final Funnel funnel;
+    private final Cantdle cantdle = Cantdle.getInstance();
 
     private final Trigger stickInput =
             new Trigger(
@@ -248,8 +251,9 @@ public class RobotContainer {
                                 .alongWith(
                                         this.elevator.moveToPosition(
                                                 Constants.Elevator.L4_coral_height))
-                                // .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
-                                // Seconds.of(0.5)))
+                                .alongWith(
+                                        this.cantdle.blinkColorForever(
+                                                Cantdle.PURPLE, Seconds.of(0.5)))
                                 .until(this.stickInput)
                                 .withName("high coral R"));
 
@@ -262,8 +266,9 @@ public class RobotContainer {
                                 .alongWith(
                                         this.elevator.moveToPosition(
                                                 Constants.Elevator.L4_coral_height))
-                                // .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
-                                // Seconds.of(0.5)))
+                                .alongWith(
+                                        this.cantdle.blinkColorForever(
+                                                Cantdle.PURPLE, Seconds.of(0.5)))
                                 .until(this.stickInput)
                                 .withName("high coral L"));
 
@@ -285,8 +290,9 @@ public class RobotContainer {
                                 .alongWith(
                                         this.elevator.moveToPosition(
                                                 Constants.Elevator.L3_coral_height))
-                                // .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
-                                // Seconds.of(0.5)))
+                                .alongWith(
+                                        this.cantdle.blinkColorForever(
+                                                Cantdle.PURPLE, Seconds.of(0.5)))
                                 .until(this.stickInput)
                                 .withName("highish (level 3) coral R"));
 
@@ -299,8 +305,9 @@ public class RobotContainer {
                                 .alongWith(
                                         this.elevator.moveToPosition(
                                                 Constants.Elevator.L3_coral_height))
-                                // .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
-                                // Seconds.of(0.5)))
+                                .alongWith(
+                                        this.cantdle.blinkColorForever(
+                                                Cantdle.PURPLE, Seconds.of(0.5)))
                                 .until(this.stickInput)
                                 .withName("highish (level 3) coral L"));
 
@@ -319,8 +326,9 @@ public class RobotContainer {
                 .onTrue(
                         this.drive
                                 .algaeReefDrive()
-                                // .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
-                                // Seconds.of(0.5)))
+                                .alongWith(
+                                        this.cantdle.blinkColorForever(
+                                                Cantdle.PURPLE, Seconds.of(0.5)))
                                 .alongWith(
                                         this.elevator.moveToPosition(
                                                 () ->
@@ -341,8 +349,9 @@ public class RobotContainer {
                                 .alongWith(
                                         this.elevator.moveToPosition(
                                                 Constants.Elevator.L2_coral_height))
-                                // .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
-                                // Seconds.of(0.5)))
+                                .alongWith(
+                                        this.cantdle.blinkColorForever(
+                                                Cantdle.PURPLE, Seconds.of(0.5)))
                                 .until(this.stickInput)
                                 .withName("mid coral R"));
 
@@ -355,8 +364,9 @@ public class RobotContainer {
                                 .alongWith(
                                         this.elevator.moveToPosition(
                                                 Constants.Elevator.L2_coral_height))
-                                // .alongWith(this.candle.blinkColorForever(Canndle.PURPLE,
-                                // Seconds.of(0.5)))
+                                .alongWith(
+                                        this.cantdle.blinkColorForever(
+                                                Cantdle.PURPLE, Seconds.of(0.5)))
                                 .until(this.stickInput)
                                 .withName("mid coral L"));
 
