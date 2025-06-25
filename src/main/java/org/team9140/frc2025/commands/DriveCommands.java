@@ -74,6 +74,16 @@ public class DriveCommands {
                 .getTranslation();
     }
 
+    private static double joystickMultiplier = 1.0;
+
+    public static Command engageSlowMode() {
+        return Commands.runOnce(() -> joystickMultiplier = 0.5);
+    }
+
+    public static Command disengageSlowMode() {
+        return Commands.runOnce(() -> joystickMultiplier = 1.0);
+    }
+
     /**
      * Field relative drive command using two joysticks (controlling linear and angular velocities).
      */
@@ -87,10 +97,13 @@ public class DriveCommands {
                     // Get linear velocity
                     Translation2d linearVelocity =
                             getLinearVelocityFromJoysticks(
-                                    xSupplier.getAsDouble(), ySupplier.getAsDouble());
+                                            xSupplier.getAsDouble(), ySupplier.getAsDouble())
+                                    .times(joystickMultiplier);
 
                     // Apply rotation deadband
-                    double omega = Util.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
+                    double omega =
+                            Util.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND)
+                                    * joystickMultiplier;
 
                     // Square rotation value for more precise control
                     omega = Math.copySign(omega * omega, omega);

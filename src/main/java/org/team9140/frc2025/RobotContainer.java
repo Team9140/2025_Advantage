@@ -393,8 +393,10 @@ public class RobotContainer {
                                 this.controller.getHID()::getLeftTriggerAxis,
                                 this.controller.getHID()::getRightTriggerAxis));
         this.controller.back().onTrue(this.climber.prep());
-        // this.elevator.isUp.onTrue(this.drive.engageSlowMode())
-        // .onFalse(this.drivetrain.disengageSlowMode());
+        this.elevator
+                .isUp
+                .onTrue(DriveCommands.engageSlowMode())
+                .onFalse(DriveCommands.disengageSlowMode());
     }
 
     /**
