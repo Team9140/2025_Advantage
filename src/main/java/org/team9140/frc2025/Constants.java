@@ -99,8 +99,8 @@ public final class Constants {
         public static final AngularVelocity MIN_ROTATIONAL_SPEED = DegreesPerSecond.of(3);
         public static final AngularVelocity MIN_ROTATIONAL_SPEED_TELEOP = DegreesPerSecond.of(3);
 
-        public static final double TRANSLATE_CONTROLLER_P = 1.0;
-        // 2.5 * 3.141592653589793238462643383279502884197169399375;
+        public static final double TRANSLATE_CONTROLLER_P =
+                2.5 * 3.141592653589793238462643383279502884197169399375;
         public static final double TRANSLATE_CONTROLLER_I = 0.0;
         public static final double TRANSLATE_CONTROLLER_D = 0.05;
         public static final double HEADING_CONTROLLER_P = 8.0; // 8.0
@@ -118,10 +118,11 @@ public final class Constants {
         public static final AngularAcceleration ANGLE_MAX_ACCELERATION =
                 RadiansPerSecondPerSecond.of(20.0);
 
-        public static final LinearVelocity TRANSLATE_MAX_VELOCITY = MetersPerSecond.of(1.75);
+        public static final LinearVelocity TRANSLATE_MAX_VELOCITY = SPEED_AT_12_VOLTS;
         // TODO: Find actual value
         public static final LinearAcceleration TRANSLATE_MAX_ACCELERATION =
                 MetersPerSecondPerSecond.of(10.0);
+        public static final Distance TRANSLATE_POSITION_TOLERANCE = Meters.of(0.015);
     }
 
     public static class FieldItemPoses {

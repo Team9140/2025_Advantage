@@ -14,6 +14,8 @@
 package org.team9140.frc2025.commands;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -47,17 +49,10 @@ public class DriveCommands {
     private static final double ANGLE_KP = Constants.Drive.HEADING_CONTROLLER_P;
     private static final double ANGLE_KI = Constants.Drive.HEADING_CONTROLLER_I;
     private static final double ANGLE_KD = Constants.Drive.HEADING_CONTROLLER_D;
-    private static final double ANGLE_MAX_VELOCITY = Math.PI * 3 / 2; // Radians per second
+    private static final double ANGLE_MAX_VELOCITY =
+            Constants.Drive.ANGLE_MAX_VELOCITY.in(RadiansPerSecond); // Radians per second
     private static final double ANGLE_MAX_ACCELERATION =
-            20.0; // TODO: Find actual value in radians per second
-    // squared
-    private static final double TRANSLATE_KP = Constants.Drive.TRANSLATE_CONTROLLER_P;
-    private static final double TRANSLATE_KI = Constants.Drive.TRANSLATE_CONTROLLER_I;
-    private static final double TRANSLATE_KD = Constants.Drive.TRANSLATE_CONTROLLER_D;
-    private static final double TRANSLATE_MAX_VELOCITY = 1.75; // Meters per second
-    private static final double TRANSLATE_MAX_ACCELERATION =
-            10.0; // TODO: Find actual value in meters per second
-    // squared
+            Constants.Drive.ANGLE_MAX_ACCELERATION.in(RadiansPerSecondPerSecond);
     private static final double FF_START_DELAY = 2.0; // Secs
     private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
     private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec
