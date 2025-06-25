@@ -36,7 +36,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
-import org.littletonrobotics.junction.Logger;
 import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Constants.ElevatorSetbacks;
 import org.team9140.frc2025.helpers.AutoAiming;
@@ -342,54 +341,8 @@ public class DriveCommands {
         double gyroDelta = 0.0;
     }
 
-    public static Command trapezoidToPose(Drive drive, Supplier<Pose2d> targetSupplier) {
-        // Maybe use Phoenix PID controllers?
-        ProfiledPIDController angleController =
-                new ProfiledPIDController(
-                        ANGLE_KP,
-                        ANGLE_KI,
-                        ANGLE_KD,
-                        new TrapezoidProfile.Constraints(
-                                ANGLE_MAX_VELOCITY, ANGLE_MAX_ACCELERATION));
-        angleController.enableContinuousInput(-Math.PI, Math.PI);
-
-        ProfiledPIDController pathXController =
-                new ProfiledPIDController(
-                        TRANSLATE_KP,
-                        TRANSLATE_KI,
-                        TRANSLATE_KD,
-                        new TrapezoidProfile.Constraints(
-                                TRANSLATE_MAX_VELOCITY, TRANSLATE_MAX_ACCELERATION));
-        ProfiledPIDController pathYController =
-                new ProfiledPIDController(
-                        TRANSLATE_KP,
-                        TRANSLATE_KI,
-                        TRANSLATE_KD,
-                        new TrapezoidProfile.Constraints(
-                                TRANSLATE_MAX_VELOCITY, TRANSLATE_MAX_ACCELERATION));
-
-        return Commands.run(
-                () -> {
-                    Pose2d pose = drive.getPose();
-                    Pose2d target = targetSupplier.get();
-
-                    double vx = pathXController.calculate(pose.getX(), target.getX());
-                    double vy = pathYController.calculate(pose.getY(), target.getY());
-                    double omega =
-                            angleController.calculate(
-                                    pose.getRotation().getRadians(),
-                                    target.getRotation().getRadians());
-                    Logger.recordOutput("Trapezoid vx", vx);
-                    Logger.recordOutput("Trapezoid vy", vy);
-                    Logger.recordOutput("Trapezoid omega", omega);
-
-                    drive.runVelocity(new ChassisSpeeds(vx, vy, omega));
-                },
-                drive);
-    }
-
     public static Command coralReefDrive(Drive drive, ElevatorSetbacks level, boolean lefty) {
-        return trapezoidToPose(
+        return new DriveToPose(
                         drive,
                         () -> {
                             AutoAiming.ReefFaces closestReef =
@@ -401,7 +354,7 @@ public class DriveCommands {
     }
 
     public static Command algaeReefDrive(Drive drive) {
-        return trapezoidToPose(
+        return new DriveToPose(
                         drive,
                         () ->
                                 AutoAiming.getClosestFace(drive.getPose().getTranslation())

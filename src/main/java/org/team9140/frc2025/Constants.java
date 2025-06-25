@@ -24,6 +24,8 @@ import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.Pounds;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
@@ -39,6 +41,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.units.DistanceUnit;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
@@ -108,6 +111,17 @@ public final class Constants {
         // TODO: Actual value
         public static final AngularVelocity MAX_MODULE_ROTATIONAL_SPEED =
                 RotationsPerSecond.of(3.0);
+
+        public static final AngularVelocity ANGLE_MAX_VELOCITY =
+                RadiansPerSecond.of(Math.PI * 3 / 2);
+        // TODO: Find actual value
+        public static final AngularAcceleration ANGLE_MAX_ACCELERATION =
+                RadiansPerSecondPerSecond.of(20.0);
+
+        public static final LinearVelocity TRANSLATE_MAX_VELOCITY = MetersPerSecond.of(1.75);
+        // TODO: Find actual value
+        public static final LinearAcceleration TRANSLATE_MAX_ACCELERATION =
+                MetersPerSecondPerSecond.of(10.0);
     }
 
     public static class FieldItemPoses {
