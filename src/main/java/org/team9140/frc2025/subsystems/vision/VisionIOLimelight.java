@@ -60,8 +60,7 @@ public class VisionIOLimelight implements VisionIO {
 
     @Override
     public void updateInputs(VisionIOInputs inputs) {
-        // Update connection status based on whether an update has been seen in the last
-        // 250ms
+        // Update connection status based on whether an update has been seen in the last 250ms
         inputs.connected =
                 ((RobotController.getFPGATime() - latencySubscriber.getLastChange()) / 1000) < 250;
 
@@ -94,8 +93,7 @@ public class VisionIOLimelight implements VisionIO {
                             parsePose(rawSample.value),
 
                             // Ambiguity, using only the first tag because ambiguity isn't
-                            // applicable for
-                            // multitag
+                            // applicable for multitag
                             rawSample.value.length >= 18 ? rawSample.value[17] : 0.0,
 
                             // Tag count

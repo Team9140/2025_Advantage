@@ -17,6 +17,7 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.StatusSignal;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,7 +63,7 @@ public class PhoenixOdometryThread extends Thread {
 
     @Override
     public void start() {
-        if (timestampQueues.size() > 0) {
+        if (!timestampQueues.isEmpty() && RobotBase.isReal()) {
             super.start();
         }
     }
@@ -137,8 +138,8 @@ public class PhoenixOdometryThread extends Thread {
             Drive.odometryLock.lock();
             try {
                 // Sample timestamp is current FPGA time minus average CAN latency
-                // Default timestamps from Phoenix are NOT compatible with
-                // FPGA timestamps, this solution is imperfect but close
+                //     Default timestamps from Phoenix are NOT compatible with
+                //     FPGA timestamps, this solution is imperfect but close
                 double timestamp = RobotController.getFPGATime() / 1e6;
                 double totalLatency = 0.0;
                 for (BaseStatusSignal signal : phoenixSignals) {

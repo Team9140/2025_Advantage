@@ -17,6 +17,8 @@ import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Seconds;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
@@ -24,6 +26,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import org.ironmaple.simulation.SimulatedArena;
+import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
+import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.team9140.frc2025.commands.DriveCommands;
 import org.team9140.frc2025.generated.TunerConstants;
@@ -36,9 +41,10 @@ import org.team9140.frc2025.subsystems.climber.ClimberIOTalonFX;
 import org.team9140.frc2025.subsystems.drive.Drive;
 import org.team9140.frc2025.subsystems.drive.GyroIO;
 import org.team9140.frc2025.subsystems.drive.GyroIOPigeon2;
+import org.team9140.frc2025.subsystems.drive.GyroIOSim;
 import org.team9140.frc2025.subsystems.drive.ModuleIO;
-import org.team9140.frc2025.subsystems.drive.ModuleIOSim;
-import org.team9140.frc2025.subsystems.drive.ModuleIOTalonFX;
+import org.team9140.frc2025.subsystems.drive.ModuleIOTalonFXReal;
+import org.team9140.frc2025.subsystems.drive.ModuleIOTalonFXSim;
 import org.team9140.frc2025.subsystems.elevator.Elevator;
 import org.team9140.frc2025.subsystems.elevator.ElevatorIO;
 import org.team9140.frc2025.subsystems.elevator.ElevatorIOSim;
@@ -74,6 +80,8 @@ public class RobotContainer {
     private final Funnel funnel;
     private final Cantdle cantdle = Cantdle.getInstance();
 
+    private SwerveDriveSimulation driveSimulation = null;
+
     private final Trigger stickInput =
             new Trigger(
                     () ->
@@ -89,14 +97,15 @@ public class RobotContainer {
                 drive =
                         new Drive(
                                 new GyroIOPigeon2(),
-                                new ModuleIOTalonFX(TunerConstants.FrontLeft),
-                                new ModuleIOTalonFX(TunerConstants.FrontRight),
-                                new ModuleIOTalonFX(TunerConstants.BackLeft),
-                                new ModuleIOTalonFX(TunerConstants.BackRight));
+                                new ModuleIOTalonFXReal(TunerConstants.FrontLeft),
+                                new ModuleIOTalonFXReal(TunerConstants.FrontRight),
+                                new ModuleIOTalonFXReal(TunerConstants.BackLeft),
+                                new ModuleIOTalonFXReal(TunerConstants.BackRight),
+                                (pose) -> {});
 
                 vision =
                         new Vision(
-                                drive::addVisionMeasurement,
+                                drive,
                                 new VisionIOLimelight(Constants.Vision.limeA, drive::getRotation),
                                 new VisionIOLimelight(Constants.Vision.limeB, drive::getRotation),
                                 new VisionIOLimelight(Constants.Vision.limeC, drive::getRotation));
@@ -119,29 +128,38 @@ public class RobotContainer {
 
             case SIM:
                 // Sim robot, instantiate physics sim IO implementations
+                driveSimulation =
+                        new SwerveDriveSimulation(
+                                Drive.mapleSimConfig, new Pose2d(3, 3, new Rotation2d()));
+                SimulatedArena.getInstance().addDriveTrainSimulation(driveSimulation);
                 drive =
                         new Drive(
-                                new GyroIO() {},
-                                new ModuleIOSim(TunerConstants.FrontLeft),
-                                new ModuleIOSim(TunerConstants.FrontRight),
-                                new ModuleIOSim(TunerConstants.BackLeft),
-                                new ModuleIOSim(TunerConstants.BackRight));
+                                new GyroIOSim(driveSimulation.getGyroSimulation()),
+                                new ModuleIOTalonFXSim(
+                                        TunerConstants.FrontLeft, driveSimulation.getModules()[0]),
+                                new ModuleIOTalonFXSim(
+                                        TunerConstants.FrontRight, driveSimulation.getModules()[1]),
+                                new ModuleIOTalonFXSim(
+                                        TunerConstants.BackLeft, driveSimulation.getModules()[2]),
+                                new ModuleIOTalonFXSim(
+                                        TunerConstants.BackRight, driveSimulation.getModules()[3]),
+                                driveSimulation::setSimulationWorldPose);
 
                 vision =
                         new Vision(
-                                drive::addVisionMeasurement,
+                                drive,
                                 new VisionIOPhotonVisionSim(
                                         Constants.Vision.limeA,
                                         Constants.Vision.robotToLimeA,
-                                        drive::getPose),
+                                        driveSimulation::getSimulatedDriveTrainPose),
                                 new VisionIOPhotonVisionSim(
                                         Constants.Vision.limeB,
                                         Constants.Vision.robotToLimeB,
-                                        drive::getPose),
+                                        driveSimulation::getSimulatedDriveTrainPose),
                                 new VisionIOPhotonVisionSim(
                                         Constants.Vision.limeC,
                                         Constants.Vision.robotToLimeC,
-                                        drive::getPose));
+                                        driveSimulation::getSimulatedDriveTrainPose));
 
                 elevator = new Elevator(new ElevatorIOSim());
 
@@ -168,14 +186,10 @@ public class RobotContainer {
                                 new ModuleIO() {},
                                 new ModuleIO() {},
                                 new ModuleIO() {},
-                                new ModuleIO() {});
+                                new ModuleIO() {},
+                                (robotPose) -> {});
 
-                vision =
-                        new Vision(
-                                drive::addVisionMeasurement,
-                                new VisionIO() {},
-                                new VisionIO() {},
-                                new VisionIO() {});
+                vision = new Vision(drive, new VisionIO() {}, new VisionIO() {}, new VisionIO() {});
 
                 elevator = new Elevator(new ElevatorIO() {});
 
@@ -406,5 +420,26 @@ public class RobotContainer {
      */
     public Command getAutonomousCommand() {
         return autoChooser.get();
+    }
+
+    public void resetSimulationField() {
+        if (Constants.currentMode != Constants.Mode.SIM) return;
+
+        driveSimulation.setSimulationWorldPose(new Pose2d(3, 3, new Rotation2d()));
+        SimulatedArena.getInstance().resetFieldForAuto();
+    }
+
+    public void updateSimulation() {
+        if (Constants.currentMode != Constants.Mode.SIM) return;
+
+        SimulatedArena.getInstance().simulationPeriodic();
+        Logger.recordOutput(
+                "FieldSimulation/RobotPosition", driveSimulation.getSimulatedDriveTrainPose());
+        Logger.recordOutput(
+                "FieldSimulation/Coral",
+                SimulatedArena.getInstance().getGamePiecesArrayByType("Coral"));
+        Logger.recordOutput(
+                "FieldSimulation/Algae",
+                SimulatedArena.getInstance().getGamePiecesArrayByType("Algae"));
     }
 }
