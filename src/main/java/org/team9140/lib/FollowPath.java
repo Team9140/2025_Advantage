@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 
 public class FollowPath {
     private final TreeMap<String, Trigger> eventtimes;
@@ -36,7 +37,7 @@ public class FollowPath {
     private final Supplier<Pose2d> poseSupplier;
     private final Consumer<SwerveSample> sampleConsumer;
 
-    private final Subsystem requirement;
+    private final Subsystem[] requirements;
 
     private final Pose2d finalPose;
 
@@ -45,7 +46,7 @@ public class FollowPath {
             Supplier<Pose2d> poseSupplier,
             Consumer<SwerveSample> sampleConsumer,
             DriverStation.Alliance alliance,
-            Subsystem requirement) {
+            Subsystem... requirements) {
         Choreo.<SwerveSample>loadTrajectory(name)
                 .ifPresent(
                         trajectory ->
@@ -62,9 +63,13 @@ public class FollowPath {
         this.activeTrigger = new Trigger(loop, () -> this.active);
 
         this.poseSupplier = poseSupplier;
-        this.sampleConsumer = sampleConsumer;
+        this.sampleConsumer =
+                (sample) -> {
+                    sampleConsumer.accept(sample);
+                    Logger.recordOutput("FollowPath/ExpectedPose", sample.getPose());
+                };
 
-        this.requirement = requirement;
+        this.requirements = requirements;
 
         for (EventMarker e : this.trajectory.events()) {
             if (this.eventtimes.containsKey(e.event))
@@ -163,6 +168,6 @@ public class FollowPath {
                 () ->
                         (this.timer.hasElapsed(this.trajectory.getTotalTime()))
                                 && Util.epsilonEquals(poseSupplier.get(), getFinalPose()),
-                requirement);
+                requirements);
     }
 }

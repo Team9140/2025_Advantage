@@ -16,12 +16,12 @@ package org.team9140.frc2025;
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Seconds;
 
-import com.pathplanner.lib.auto.AutoBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -30,6 +30,7 @@ import org.ironmaple.simulation.SimulatedArena;
 import org.ironmaple.simulation.drivesims.SwerveDriveSimulation;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+import org.team9140.frc2025.commands.AutonomousRoutines;
 import org.team9140.frc2025.commands.DriveCommands;
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.helpers.AutoAiming;
@@ -203,7 +204,7 @@ public class RobotContainer {
         }
 
         // Set up auto routines
-        autoChooser = new LoggedDashboardChooser<>("Auto Choices", AutoBuilder.buildAutoChooser());
+        autoChooser = new LoggedDashboardChooser<>("Auto Choices", new SendableChooser<>());
 
         // Set up SysId routines
         autoChooser.addOption(
@@ -419,7 +420,9 @@ public class RobotContainer {
      * @return the command to run in autonomous
      */
     public Command getAutonomousCommand() {
-        return autoChooser.get();
+        // return autoChooser.get();
+        AutonomousRoutines autos = new AutonomousRoutines(drive, elevator, manipulator, funnel);
+        return autos.JtoLeftFeed();
     }
 
     public void resetSimulationField() {

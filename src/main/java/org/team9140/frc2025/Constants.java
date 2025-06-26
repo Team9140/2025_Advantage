@@ -18,6 +18,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Feet;
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.KilogramSquareMeters;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
@@ -48,6 +49,7 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Mass;
+import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -74,7 +76,7 @@ public final class Constants {
 
     public static final Time LOOP_PERIOD = Milliseconds.of(20.0);
 
-    public static final Mass ROBOT_MASS = Pounds.of(100); // TODO: Put real value
+    public static final Mass ROBOT_MASS = Pounds.of(130.0); // TODO: Put real value
 
     public static final LinearAcceleration G = MetersPerSecondPerSecond.of(9.807);
 
@@ -89,6 +91,10 @@ public final class Constants {
     }
 
     public static class Drive {
+        public static final MomentOfInertia MOI = KilogramSquareMeters.of(6.0);
+        public static final double COF = 1.5;
+        public static final Distance WHEEL_RADIUS = Inches.of(2.0);
+
         public static final LinearVelocity SPEED_AT_12_VOLTS = MetersPerSecond.of(4.48);
         public static final LinearVelocity MAX_teleop_velocity = SPEED_AT_12_VOLTS.times(0.8);
         public static final AngularVelocity MAX_teleop_rotation = RotationsPerSecond.of(1);
@@ -112,16 +118,13 @@ public final class Constants {
         public static final AngularVelocity MAX_MODULE_ROTATIONAL_SPEED =
                 RotationsPerSecond.of(3.0);
 
-        public static final AngularVelocity AUTO_MAX_ANGULAR_VELOCITY =
-                RadiansPerSecond.of(Math.PI * 3 / 2);
-        // TODO: Find actual value
+        public static final AngularVelocity AUTO_MAX_ANGULAR_VELOCITY = RadiansPerSecond.of(10.162);
         public static final AngularAcceleration AUTO_MAX_ANGULAR_ACCELERATION =
-                RadiansPerSecondPerSecond.of(20.0);
+                RadiansPerSecondPerSecond.of(49.465);
 
         public static final LinearVelocity AUTO_MAX_TRANSLATIONAL_VELOCITY = SPEED_AT_12_VOLTS;
-        // TODO: Find actual value
         public static final LinearAcceleration AUTO_MAX_TRANSLATIONAL_ACCELERATION =
-                MetersPerSecondPerSecond.of(10.0);
+                MetersPerSecondPerSecond.of(11.8);
         public static final Distance TRANSLATE_POSITION_TOLERANCE = Meters.of(0.015);
     }
 

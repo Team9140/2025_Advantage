@@ -15,14 +15,10 @@ package org.team9140.frc2025.subsystems.drive;
 
 import static edu.wpi.first.units.Units.*;
 
+import choreo.trajectory.SwerveSample;
 import com.ctre.phoenix6.CANBus;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.ModuleConfig;
-import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.pathfinding.Pathfinding;
-import com.pathplanner.lib.util.PathPlannerLogging;
+import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.swerve.utility.PhoenixPIDController;
 import edu.wpi.first.hal.FRCNetComm.tInstances;
 import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.hal.HAL;
@@ -42,7 +38,6 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -58,7 +53,6 @@ import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Constants.Mode;
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.subsystems.vision.Vision;
-import org.team9140.frc2025.util.LocalADStarAK;
 
 public class Drive extends SubsystemBase implements Vision.VisionConsumer {
     // TunerConstants doesn't include these constants, so they are declared locally
@@ -82,39 +76,71 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
                                     TunerConstants.BackRight.LocationY)));
 
     // PathPlanner config constants
-    private static final double ROBOT_MASS_KG = Constants.ROBOT_MASS.in(Kilograms);
-    private static final double ROBOT_MOI = 6.883; // Not real value
-    private static final double WHEEL_COF = 1.2;
-    private static final RobotConfig PP_CONFIG =
-            new RobotConfig(
-                    ROBOT_MASS_KG,
-                    ROBOT_MOI,
-                    new ModuleConfig(
-                            TunerConstants.FrontLeft.WheelRadius,
-                            TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
-                            WHEEL_COF,
-                            DCMotor.getKrakenX60Foc(1)
-                                    .withReduction(TunerConstants.FrontLeft.DriveMotorGearRatio),
-                            TunerConstants.FrontLeft.SlipCurrent,
-                            1),
-                    getModuleTranslations());
+    // private static final double ROBOT_MASS_KG = Constants.ROBOT_MASS.in(Kilograms);
+    // private static final double ROBOT_MOI = 6.883; // Not real value
+    // private static final double WHEEL_COF = 1.2;
+    // private static final RobotConfig PP_CONFIG =
+    //         new RobotConfig(
+    //                 ROBOT_MASS_KG,
+    //                 ROBOT_MOI,
+    //                 new ModuleConfig(
+    //                         TunerConstants.FrontLeft.WheelRadius,
+    //                         TunerConstants.kSpeedAt12Volts.in(MetersPerSecond),
+    //                         WHEEL_COF,
+    //                         DCMotor.getKrakenX60Foc(1)
+    //                                 .withReduction(TunerConstants.FrontLeft.DriveMotorGearRatio),
+    //                         TunerConstants.FrontLeft.SlipCurrent,
+    //                         1),
+    //                 getModuleTranslations());
 
+    @SuppressWarnings("unchecked")
     public static final DriveTrainSimulationConfig mapleSimConfig =
             DriveTrainSimulationConfig.Default()
-                    .withRobotMass(Kilograms.of(ROBOT_MASS_KG))
+                    // TODO: .withBumperSize(null, null)
+                    .withRobotMass(Constants.ROBOT_MASS)
                     .withCustomModuleTranslations(getModuleTranslations())
                     .withGyro(COTS.ofPigeon2())
-                    .withSwerveModule(
+                    .withSwerveModules(
                             new SwerveModuleSimulationConfig(
-                                    DCMotor.getKrakenX60(1),
-                                    DCMotor.getFalcon500(1),
+                                    DCMotor.getKrakenX60Foc(1),
+                                    DCMotor.getKrakenX60Foc(1),
                                     TunerConstants.FrontLeft.DriveMotorGearRatio,
                                     TunerConstants.FrontLeft.SteerMotorGearRatio,
                                     Volts.of(TunerConstants.FrontLeft.DriveFrictionVoltage),
                                     Volts.of(TunerConstants.FrontLeft.SteerFrictionVoltage),
                                     Meters.of(TunerConstants.FrontLeft.WheelRadius),
                                     KilogramSquareMeters.of(TunerConstants.FrontLeft.SteerInertia),
-                                    WHEEL_COF));
+                                    Constants.Drive.COF),
+                            new SwerveModuleSimulationConfig(
+                                    DCMotor.getKrakenX60Foc(1),
+                                    DCMotor.getKrakenX60Foc(1),
+                                    TunerConstants.FrontRight.DriveMotorGearRatio,
+                                    TunerConstants.FrontRight.SteerMotorGearRatio,
+                                    Volts.of(TunerConstants.FrontRight.DriveFrictionVoltage),
+                                    Volts.of(TunerConstants.FrontRight.SteerFrictionVoltage),
+                                    Meters.of(TunerConstants.FrontRight.WheelRadius),
+                                    KilogramSquareMeters.of(TunerConstants.FrontRight.SteerInertia),
+                                    Constants.Drive.COF),
+                            new SwerveModuleSimulationConfig(
+                                    DCMotor.getKrakenX60Foc(1),
+                                    DCMotor.getKrakenX60Foc(1),
+                                    TunerConstants.BackLeft.DriveMotorGearRatio,
+                                    TunerConstants.BackLeft.SteerMotorGearRatio,
+                                    Volts.of(TunerConstants.BackLeft.DriveFrictionVoltage),
+                                    Volts.of(TunerConstants.BackLeft.SteerFrictionVoltage),
+                                    Meters.of(TunerConstants.BackLeft.WheelRadius),
+                                    KilogramSquareMeters.of(TunerConstants.BackLeft.SteerInertia),
+                                    Constants.Drive.COF),
+                            new SwerveModuleSimulationConfig(
+                                    DCMotor.getKrakenX60Foc(1),
+                                    DCMotor.getKrakenX60Foc(1),
+                                    TunerConstants.BackRight.DriveMotorGearRatio,
+                                    TunerConstants.BackRight.SteerMotorGearRatio,
+                                    Volts.of(TunerConstants.BackRight.DriveFrictionVoltage),
+                                    Volts.of(TunerConstants.BackRight.SteerFrictionVoltage),
+                                    Meters.of(TunerConstants.BackRight.WheelRadius),
+                                    KilogramSquareMeters.of(TunerConstants.BackRight.SteerInertia),
+                                    Constants.Drive.COF));
 
     static final Lock odometryLock = new ReentrantLock();
     private final GyroIO gyroIO;
@@ -162,27 +188,27 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
         PhoenixOdometryThread.getInstance().start();
 
         // Configure AutoBuilder for PathPlanner
-        AutoBuilder.configure(
-                this::getPose,
-                this::setPose,
-                this::getChassisSpeeds,
-                this::runVelocity,
-                new PPHolonomicDriveController(
-                        new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
-                PP_CONFIG,
-                () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
-                this);
-        Pathfinding.setPathfinder(new LocalADStarAK());
-        PathPlannerLogging.setLogActivePathCallback(
-                (activePath) -> {
-                    Logger.recordOutput(
-                            "Odometry/Trajectory",
-                            activePath.toArray(new Pose2d[activePath.size()]));
-                });
-        PathPlannerLogging.setLogTargetPoseCallback(
-                (targetPose) -> {
-                    Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
-                });
+        // AutoBuilder.configure(
+        //         this::getPose,
+        //         this::setPose,
+        //         this::getChassisSpeeds,
+        //         this::runVelocity,
+        //         new PPHolonomicDriveController(
+        //                 new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0)),
+        //         PP_CONFIG,
+        //         () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
+        //         this);
+        // Pathfinding.setPathfinder(new LocalADStarAK());
+        // PathPlannerLogging.setLogActivePathCallback(
+        //         (activePath) -> {
+        //             Logger.recordOutput(
+        //                     "Odometry/Trajectory",
+        //                     activePath.toArray(new Pose2d[activePath.size()]));
+        //         });
+        // PathPlannerLogging.setLogTargetPoseCallback(
+        //         (targetPose) -> {
+        //             Logger.recordOutput("Odometry/TrajectorySetpoint", targetPose);
+        //         });
 
         // Configure SysId
         sysId =
@@ -410,5 +436,42 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
             new Translation2d(
                     TunerConstants.BackRight.LocationX, TunerConstants.BackRight.LocationY)
         };
+    }
+
+    PhoenixPIDController m_pathXController =
+            new PhoenixPIDController(
+                    Constants.Drive.TRANSLATE_CONTROLLER_P,
+                    Constants.Drive.TRANSLATE_CONTROLLER_I,
+                    Constants.Drive.TRANSLATE_CONTROLLER_D);
+    PhoenixPIDController m_pathYController =
+            new PhoenixPIDController(
+                    Constants.Drive.TRANSLATE_CONTROLLER_P,
+                    Constants.Drive.TRANSLATE_CONTROLLER_I,
+                    Constants.Drive.TRANSLATE_CONTROLLER_D);
+    PhoenixPIDController headingController =
+            new PhoenixPIDController(
+                    Constants.Drive.HEADING_CONTROLLER_P,
+                    Constants.Drive.HEADING_CONTROLLER_I,
+                    Constants.Drive.HEADING_CONTROLLER_D);
+
+    public void followSample(SwerveSample sample) {
+        Pose2d currPose = getPose();
+
+        double currentTime = Utils.getCurrentTimeSeconds();
+
+        this.runVelocity(
+                ChassisSpeeds.fromFieldRelativeSpeeds(
+                        sample.vx
+                                + this.m_pathXController.calculate(
+                                        currPose.getX(), sample.x, currentTime),
+                        sample.vy
+                                + this.m_pathYController.calculate(
+                                        currPose.getY(), sample.y, currentTime),
+                        sample.omega
+                                + this.headingController.calculate(
+                                        currPose.getRotation().getRadians(),
+                                        sample.heading,
+                                        currentTime),
+                        this.getRotation()));
     }
 }

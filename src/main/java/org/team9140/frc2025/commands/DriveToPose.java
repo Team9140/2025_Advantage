@@ -54,7 +54,8 @@ public class DriveToPose extends Command {
                     Constants.Drive.HEADING_CONTROLLER_D,
                     new TrapezoidProfile.Constraints(
                             Constants.Drive.AUTO_MAX_ANGULAR_VELOCITY.in(RadiansPerSecond),
-                            Constants.Drive.AUTO_MAX_ANGULAR_ACCELERATION.in(RadiansPerSecondPerSecond)),
+                            Constants.Drive.AUTO_MAX_ANGULAR_ACCELERATION.in(
+                                    RadiansPerSecondPerSecond)),
                     Constants.LOOP_PERIOD.in(Seconds));
 
     private Translation2d lastSetpointTranslation = Translation2d.kZero;

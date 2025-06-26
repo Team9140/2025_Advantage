@@ -93,13 +93,33 @@ public class Manipulator extends SubsystemBase {
                                     switch (currentItem) {
                                         case ALGAE -> ManipulatorState.OUTTAKE_ALGAE;
                                         case CORAL -> ManipulatorState.OUTTAKE_CORAL;
-                                        default -> ManipulatorState.IDLE;
+                                        default -> ManipulatorState
+                                                .OUTTAKE_CORAL; // Could be preload
                                     };
 
                             currentItem =
                                     currentItem == Holdable.ALGAE ? Holdable.WATER : currentItem;
                         })
                 .withName("outtake");
+    }
+
+    public Command outtakeCoral() {
+        return this.runOnce(
+                        () -> {
+                            this.state = ManipulatorState.OUTTAKE_CORAL;
+                        })
+                .withName("outtake coral");
+    }
+
+    public Command outtakeAlgae() {
+        return this.runOnce(
+                        () -> {
+                            this.state = ManipulatorState.OUTTAKE_ALGAE;
+                            this.currentItem =
+                                    Holdable.WATER; // Reset current item to water after outtaking
+                            // algae
+                        })
+                .withName("outtake algae");
     }
 
     public Command unstickCoral() {

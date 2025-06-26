@@ -117,7 +117,9 @@ public class DriveCommands {
                                     linearVelocity.getY()
                                             * Constants.Drive.MAX_teleop_velocity.in(
                                                     MetersPerSecond),
-                                    omega * drive.getMaxAngularSpeedRadPerSec());
+                                    omega
+                                            * Constants.Drive.MAX_teleop_rotation.in(
+                                                    RadiansPerSecond));
                     boolean isFlipped =
                             DriverStation.getAlliance().isPresent()
                                     && DriverStation.getAlliance().get() == Alliance.Red;
@@ -368,5 +370,9 @@ public class DriveCommands {
                                 AutoAiming.getClosestFace(drive.getPose().getTranslation())
                                         .getCenter())
                 .withName("coral drive");
+    }
+
+    public static Command stop(Drive drive) {
+        return Commands.runOnce(drive::stop, drive);
     }
 }
