@@ -112,15 +112,15 @@ public final class Constants {
         public static final AngularVelocity MAX_MODULE_ROTATIONAL_SPEED =
                 RotationsPerSecond.of(3.0);
 
-        public static final AngularVelocity ANGLE_MAX_VELOCITY =
+        public static final AngularVelocity AUTO_MAX_ANGULAR_VELOCITY =
                 RadiansPerSecond.of(Math.PI * 3 / 2);
         // TODO: Find actual value
-        public static final AngularAcceleration ANGLE_MAX_ACCELERATION =
+        public static final AngularAcceleration AUTO_MAX_ANGULAR_ACCELERATION =
                 RadiansPerSecondPerSecond.of(20.0);
 
-        public static final LinearVelocity TRANSLATE_MAX_VELOCITY = SPEED_AT_12_VOLTS;
+        public static final LinearVelocity AUTO_MAX_TRANSLATIONAL_VELOCITY = SPEED_AT_12_VOLTS;
         // TODO: Find actual value
-        public static final LinearAcceleration TRANSLATE_MAX_ACCELERATION =
+        public static final LinearAcceleration AUTO_MAX_TRANSLATIONAL_ACCELERATION =
                 MetersPerSecondPerSecond.of(10.0);
         public static final Distance TRANSLATE_POSITION_TOLERANCE = Meters.of(0.015);
     }

@@ -50,9 +50,9 @@ public class DriveCommands {
     private static final double ANGLE_KI = Constants.Drive.HEADING_CONTROLLER_I;
     private static final double ANGLE_KD = Constants.Drive.HEADING_CONTROLLER_D;
     private static final double ANGLE_MAX_VELOCITY =
-            Constants.Drive.ANGLE_MAX_VELOCITY.in(RadiansPerSecond); // Radians per second
+            Constants.Drive.AUTO_MAX_ANGULAR_VELOCITY.in(RadiansPerSecond); // Radians per second
     private static final double ANGLE_MAX_ACCELERATION =
-            Constants.Drive.ANGLE_MAX_ACCELERATION.in(RadiansPerSecondPerSecond);
+            Constants.Drive.AUTO_MAX_ANGULAR_ACCELERATION.in(RadiansPerSecondPerSecond);
     private static final double FF_START_DELAY = 2.0; // Secs
     private static final double FF_RAMP_RATE = 0.1; // Volts/Sec
     private static final double WHEEL_RADIUS_MAX_VELOCITY = 0.25; // Rad/Sec

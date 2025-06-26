@@ -38,8 +38,8 @@ public class DriveToPose extends Command {
     private final TrapezoidProfile driveProfile =
             new TrapezoidProfile(
                     new TrapezoidProfile.Constraints(
-                            Constants.Drive.TRANSLATE_MAX_VELOCITY.in(MetersPerSecond),
-                            Constants.Drive.TRANSLATE_MAX_ACCELERATION.in(
+                            Constants.Drive.AUTO_MAX_TRANSLATIONAL_VELOCITY.in(MetersPerSecond),
+                            Constants.Drive.AUTO_MAX_TRANSLATIONAL_ACCELERATION.in(
                                     MetersPerSecondPerSecond)));
 
     private PhoenixPIDController translationalController =
@@ -53,8 +53,8 @@ public class DriveToPose extends Command {
                     Constants.Drive.HEADING_CONTROLLER_I,
                     Constants.Drive.HEADING_CONTROLLER_D,
                     new TrapezoidProfile.Constraints(
-                            Constants.Drive.ANGLE_MAX_VELOCITY.in(RadiansPerSecond),
-                            Constants.Drive.ANGLE_MAX_ACCELERATION.in(RadiansPerSecondPerSecond)),
+                            Constants.Drive.AUTO_MAX_ANGULAR_VELOCITY.in(RadiansPerSecond),
+                            Constants.Drive.AUTO_MAX_ANGULAR_ACCELERATION.in(RadiansPerSecondPerSecond)),
                     Constants.LOOP_PERIOD.in(Seconds));
 
     private Translation2d lastSetpointTranslation = Translation2d.kZero;
