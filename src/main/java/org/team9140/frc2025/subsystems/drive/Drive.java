@@ -53,8 +53,13 @@ import org.team9140.frc2025.Constants;
 import org.team9140.frc2025.Constants.Mode;
 import org.team9140.frc2025.generated.TunerConstants;
 import org.team9140.frc2025.subsystems.vision.Vision;
+import org.team9140.lib.SwerveSetpointGenerator;
+import org.team9140.lib.SwerveSetpointGenerator.SwerveSetpoint;
 
 public class Drive extends SubsystemBase implements Vision.VisionConsumer {
+    private final SwerveSetpointGenerator setpointGenerator;
+    private SwerveSetpoint previousSetpoint;
+
     // TunerConstants doesn't include these constants, so they are declared locally
     static final double ODOMETRY_FREQUENCY =
             new CANBus(TunerConstants.DrivetrainConstants.CANBusName).isNetworkFD() ? 250.0 : 100.0;
@@ -221,6 +226,9 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
                                         Logger.recordOutput("Drive/SysIdState", state.toString())),
                         new SysIdRoutine.Mechanism(
                                 (voltage) -> runCharacterization(voltage.in(Volts)), null, this));
+
+        this.setpointGenerator = new SwerveSetpointGenerator(kinematics, getModuleTranslations());
+        this.previousSetpoint = new SwerveSetpoint(getChassisSpeeds(), getModuleStates());
     }
 
     @Override
@@ -288,9 +296,10 @@ public class Drive extends SubsystemBase implements Vision.VisionConsumer {
      * @param speeds Speeds in meters/sec
      */
     public void runVelocity(ChassisSpeeds speeds) {
+        previousSetpoint = setpointGenerator.generateSetpoint(previousSetpoint, speeds, 0.02);
+        SwerveModuleState[] setpointStates = previousSetpoint.mModuleStates;
         // Calculate module setpoints
         speeds = ChassisSpeeds.discretize(speeds, 0.02);
-        SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(speeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, TunerConstants.kSpeedAt12Volts);
 
         // Log unoptimized setpoints and setpoint speeds
